@@ -100,10 +100,8 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
         <span class="chart-sum" id="chartKlassenSum"></span>
       </div>
       <svg id="chartKlassen" viewBox="0 0 720 280" role="img" aria-label="Fehlerklassen je Lieferant"></svg>
-      <div class="table-toolbar">
-        <input type="search" class="table-filter" data-filter="klassen" placeholder="Filtern (z. B. Lieferant oder Fehlerklasse)…" />
-        <span class="table-filter-hint" data-hint="klassen"></span>
-      </div>
+      <div class="slicers" id="sliceKlassen"></div>
+      <p class="table-filter-hint" data-hint="klassen"></p>
       <table>
         <thead>
           <tr>
@@ -120,10 +118,8 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
 
     <section class="panel">
       <h2>Top reklamierte Artikel (Menge / Anträge)</h2>
-      <div class="table-toolbar">
-        <input type="search" class="table-filter" data-filter="artikel" placeholder="Filtern (z. B. Artikel oder Lieferant)…" />
-        <span class="table-filter-hint" data-hint="artikel"></span>
-      </div>
+      <div class="slicers" id="sliceArtikel"></div>
+      <p class="table-filter-hint" data-hint="artikel"></p>
       <table>
         <thead>
           <tr>
@@ -140,10 +136,8 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
 
     <section class="panel">
       <h2>Lieferanten-Risiko</h2>
-      <div class="table-toolbar">
-        <input type="search" class="table-filter" data-filter="lieferant" placeholder="Filtern (z. B. Lieferant)…" />
-        <span class="table-filter-hint" data-hint="lieferant"></span>
-      </div>
+      <div class="slicers" id="sliceLieferant"></div>
+      <p class="table-filter-hint" data-hint="lieferant"></p>
       <table>
         <thead>
           <tr>

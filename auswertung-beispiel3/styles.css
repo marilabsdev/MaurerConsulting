@@ -183,32 +183,54 @@ th, td {
   border-bottom: 1px solid var(--line);
 }
 th { color: var(--accent); font-size: 0.78rem; }
-.table-toolbar {
+.slicers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 4px;
+}
+.slicer-block {
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.slicer-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.slicer-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-top: 4px;
+  gap: 6px;
 }
-.table-filter {
-  flex: 1;
-  min-width: 180px;
-  max-width: 360px;
+button.slicer-chip {
   border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 0.88rem;
-  color: var(--text);
   background: #fff;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  line-height: 1.2;
 }
-.table-filter:focus {
-  outline: none;
+button.slicer-chip:hover { border-color: var(--accent); }
+button.slicer-chip.active {
+  background: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(107, 33, 168, 0.12);
+  color: #fff;
+}
+button.slicer-chip.all-chip {
+  font-weight: 600;
+  border-style: dashed;
 }
 .table-filter-hint {
   font-size: 0.78rem;
   color: var(--muted);
+  margin: 4px 0 0;
 }
 
 th.sortable {

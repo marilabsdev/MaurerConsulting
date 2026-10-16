@@ -22,16 +22,23 @@
     lieferant: { key: "Risiko", dir: -1 },
   };
 
-  const filterState = {
-    klassen: "",
-    artikel: "",
-    lieferant: "",
+  /** Datenschnitte: leeres Set = alle Werte */
+  const sliceState = {
+    klassen: { Lieferant: new Set(), Klasse: new Set() },
+    artikel: { Lieferant: new Set(), Warengruppe: new Set() },
+    lieferant: { Lieferant: new Set() },
   };
 
-  const FILTER_FIELDS = {
-    klassen: ["Lieferant", "Klasse", "Antraege", "Anerkannt", "Kosten"],
-    artikel: ["Artikelname", "Artikelnummer", "Warengruppe", "Lieferant", "Antraege", "Anerkannt", "Kosten"],
-    lieferant: ["Lieferant", "Antraege", "Umsatz", "Risiko", "Kosten"],
+  const SLICE_LABELS = {
+    Klasse: "Fehlerklasse",
+    Warengruppe: "Warengruppe",
+    Lieferant: "Lieferant",
+  };
+
+  const SLICE_CONTAINERS = {
+    klassen: "sliceKlassen",
+    artikel: "sliceArtikel",
+    lieferant: "sliceLieferant",
   };
 
   const els = {
@@ -414,25 +421,21 @@
     });
   }
 
-  function valueHaystack(v) {
-    if (v == null || v === "") return "";
-    if (typeof v === "number") {
-      return (
-        String(v) +
-        " " +
-        v.toLocaleString("de-DE") +
-        " " +
-        Math.round(v).toLocaleString("de-DE")
-      ).toLowerCase();
-    }
-    return String(v).toLowerCase();
+  function sliceActive(table) {
+    const dims = sliceState[table] || {};
+    return Object.values(dims).some((s) => s.size > 0);
   }
 
-  function filterRows(rows, table) {
-    const q = (filterState[table] || "").trim().toLowerCase();
-    if (!q) return rows;
-    const fields = FILTER_FIELDS[table] || [];
-    return rows.filter((r) => fields.some((f) => valueHaystack(r[f]).includes(q)));
+  function filterRows(rows, table, exceptField) {
+    const dims = sliceState[table] || {};
+    return rows.filter((r) => {
+      for (const [field, selected] of Object.entries(dims)) {
+        if (field === exceptField) continue;
+        if (!selected.size) continue;
+        if (!selected.has(String(r[field] ?? ""))) return false;
+      }
+      return true;
+    });
   }
 
   function prepareRows(rows, table) {
@@ -442,12 +445,62 @@
   function setFilterHint(table, shown, total) {
     const el = document.querySelector('[data-hint="' + table + '"]');
     if (!el) return;
-    const q = (filterState[table] || "").trim();
-    if (!q) {
-      el.textContent = total ? total + " Zeilen" : "";
+    if (!sliceActive(table)) {
+      el.textContent = total ? total + " Zeilen · Klick auf Datenschnitt filtert" : "";
       return;
     }
-    el.textContent = shown + " von " + total;
+    el.textContent = shown + " von " + total + " · erneut klicken = abwählen, „Alle“ = zurücksetzen";
+  }
+
+  function uniqueValues(rows, field) {
+    return [...new Set(rows.map((r) => String(r[field] ?? "")).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "de", { sensitivity: "base" })
+    );
+  }
+
+  function renderSlicers(table, allRows) {
+    const host = document.getElementById(SLICE_CONTAINERS[table]);
+    const dims = sliceState[table];
+    if (!host || !dims) return;
+    host.innerHTML = "";
+    Object.keys(dims).forEach((field) => {
+      const selected = dims[field];
+      const opts = uniqueValues(filterRows(allRows, table, field), field);
+      const block = document.createElement("div");
+      block.className = "slicer-block";
+      const label = document.createElement("div");
+      label.className = "slicer-label";
+      label.textContent = "Datenschnitt · " + (SLICE_LABELS[field] || field);
+      block.appendChild(label);
+      const chips = document.createElement("div");
+      chips.className = "slicer-chips";
+
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "slicer-chip all-chip" + (selected.size === 0 ? " active" : "");
+      allBtn.textContent = "Alle";
+      allBtn.onclick = () => {
+        selected.clear();
+        render();
+      };
+      chips.appendChild(allBtn);
+
+      opts.forEach((val) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "slicer-chip" + (selected.has(val) ? " active" : "");
+        b.textContent = val;
+        b.title = val;
+        b.onclick = () => {
+          if (selected.has(val)) selected.delete(val);
+          else selected.add(val);
+          render();
+        };
+        chips.appendChild(b);
+      });
+      block.appendChild(chips);
+      host.appendChild(block);
+    });
   }
 
   function syncSortHeaders() {
@@ -475,20 +528,10 @@
     });
   }
 
-  function wireFilter() {
-    document.querySelectorAll("input.table-filter[data-filter]").forEach((inp) => {
-      const t = inp.dataset.filter;
-      inp.value = filterState[t] || "";
-      inp.addEventListener("input", () => {
-        filterState[t] = inp.value;
-        render();
-      });
-    });
-  }
-
   function renderKlassen(c) {
     // Chart: Top 12 nach Anträgen; Tabelle: alle, sortierbar
     const all = c.byKlasseLieferant || [];
+    renderSlicers("klassen", all);
     const chartRows = [...all].sort((a, b) => b.Antraege - a.Antraege).slice(0, 12);
     const tableRows = prepareRows(all, "klassen");
     setFilterHint("klassen", tableRows.length, all.length);
@@ -558,6 +601,7 @@
   function renderTables(c) {
     renderKlassen(c);
 
+    renderSlicers("artikel", c.byArt);
     const artikelRows = prepareRows(c.byArt, "artikel");
     setFilterHint("artikel", artikelRows.length, c.byArt.length);
     els.tblArtikel.innerHTML =
@@ -575,6 +619,7 @@
             )
             .join("");
 
+    renderSlicers("lieferant", c.byLieferant);
     const lieferantRows = prepareRows(c.byLieferant, "lieferant");
     setFilterHint("lieferant", lieferantRows.length, c.byLieferant.length);
     els.tblLieferant.innerHTML =
@@ -776,6 +821,5 @@
     askChat(els.chatInput.value);
   });
   wireSort();
-  wireFilter();
   loadAll();
 })();

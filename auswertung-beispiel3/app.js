@@ -23,16 +23,23 @@
     quote: { key: "Je1000", dir: -1 },
   };
 
-  const filterState = {
-    klassen: "",
-    matrix: "",
-    quote: "",
+  /** Datenschnitte: leeres Set = alle Werte */
+  const sliceState = {
+    klassen: { Klasse: new Set() },
+    matrix: { Warengruppe: new Set(), Klasse: new Set() },
+    quote: { Warengruppe: new Set() },
   };
 
-  const FILTER_FIELDS = {
-    klassen: ["Klasse", "Antraege", "Kosten", "AvgDays"],
-    matrix: ["Warengruppe", "Klasse", "Antraege", "Kosten"],
-    quote: ["Artikelname", "Artikelnummer", "Warengruppe", "Verkauft", "Antraege", "Je1000", "Kosten"],
+  const SLICE_LABELS = {
+    Klasse: "Fehlerklasse",
+    Warengruppe: "Warengruppe",
+    Lieferant: "Lieferant",
+  };
+
+  const SLICE_CONTAINERS = {
+    klassen: "sliceKlassen",
+    matrix: "sliceMatrix",
+    quote: "sliceQuote",
   };
 
   const els = {
@@ -334,25 +341,21 @@
     });
   }
 
-  function valueHaystack(v) {
-    if (v == null || v === "") return "";
-    if (typeof v === "number") {
-      return (
-        String(v) +
-        " " +
-        v.toLocaleString("de-DE") +
-        " " +
-        Math.round(v).toLocaleString("de-DE")
-      ).toLowerCase();
-    }
-    return String(v).toLowerCase();
+  function sliceActive(table) {
+    const dims = sliceState[table] || {};
+    return Object.values(dims).some((s) => s.size > 0);
   }
 
-  function filterRows(rows, table) {
-    const q = (filterState[table] || "").trim().toLowerCase();
-    if (!q) return rows;
-    const fields = FILTER_FIELDS[table] || [];
-    return rows.filter((r) => fields.some((f) => valueHaystack(r[f]).includes(q)));
+  function filterRows(rows, table, exceptField) {
+    const dims = sliceState[table] || {};
+    return rows.filter((r) => {
+      for (const [field, selected] of Object.entries(dims)) {
+        if (field === exceptField) continue;
+        if (!selected.size) continue;
+        if (!selected.has(String(r[field] ?? ""))) return false;
+      }
+      return true;
+    });
   }
 
   function prepareRows(rows, table) {
@@ -362,12 +365,63 @@
   function setFilterHint(table, shown, total) {
     const el = document.querySelector('[data-hint="' + table + '"]');
     if (!el) return;
-    const q = (filterState[table] || "").trim();
-    if (!q) {
-      el.textContent = total ? total + " Zeilen" : "";
+    if (!sliceActive(table)) {
+      el.textContent = total ? total + " Zeilen · Klick auf Datenschnitt filtert" : "";
       return;
     }
-    el.textContent = shown + " von " + total;
+    el.textContent = shown + " von " + total + " · erneut klicken = abwählen, „Alle“ = zurücksetzen";
+  }
+
+  function uniqueValues(rows, field) {
+    return [...new Set(rows.map((r) => String(r[field] ?? "")).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "de", { sensitivity: "base" })
+    );
+  }
+
+  function renderSlicers(table, allRows) {
+    const host = document.getElementById(SLICE_CONTAINERS[table]);
+    const dims = sliceState[table];
+    if (!host || !dims) return;
+    host.innerHTML = "";
+    Object.keys(dims).forEach((field) => {
+      const selected = dims[field];
+      // Optionen: Werte die nach den anderen Datenschnitten noch vorkommen
+      const opts = uniqueValues(filterRows(allRows, table, field), field);
+      const block = document.createElement("div");
+      block.className = "slicer-block";
+      const label = document.createElement("div");
+      label.className = "slicer-label";
+      label.textContent = "Datenschnitt · " + (SLICE_LABELS[field] || field);
+      block.appendChild(label);
+      const chips = document.createElement("div");
+      chips.className = "slicer-chips";
+
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "slicer-chip all-chip" + (selected.size === 0 ? " active" : "");
+      allBtn.textContent = "Alle";
+      allBtn.onclick = () => {
+        selected.clear();
+        render();
+      };
+      chips.appendChild(allBtn);
+
+      opts.forEach((val) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "slicer-chip" + (selected.has(val) ? " active" : "");
+        b.textContent = val;
+        b.title = val;
+        b.onclick = () => {
+          if (selected.has(val)) selected.delete(val);
+          else selected.add(val);
+          render();
+        };
+        chips.appendChild(b);
+      });
+      block.appendChild(chips);
+      host.appendChild(block);
+    });
   }
 
   function syncSortHeaders() {
@@ -390,17 +444,6 @@
           sortState[t].key = k;
           sortState[t].dir = th.dataset.type === "str" ? 1 : -1;
         }
-        render();
-      });
-    });
-  }
-
-  function wireFilter() {
-    document.querySelectorAll("input.table-filter[data-filter]").forEach((inp) => {
-      const t = inp.dataset.filter;
-      inp.value = filterState[t] || "";
-      inp.addEventListener("input", () => {
-        filterState[t] = inp.value;
         render();
       });
     });
@@ -445,6 +488,7 @@
 
   function renderKlassen(c) {
     const chartRows = [...c.byKlasse].sort((a, b) => b.Antraege - a.Antraege);
+    renderSlicers("klassen", c.byKlasse);
     const tableRows = prepareRows(c.byKlasse, "klassen");
     setFilterHint("klassen", tableRows.length, c.byKlasse.length);
     const max = Math.max(1, ...chartRows.map((r) => r.Antraege));
@@ -492,6 +536,7 @@
   }
 
   function renderMatrix(c) {
+    renderSlicers("matrix", c.byMatrix);
     const rows = prepareRows(c.byMatrix, "matrix");
     setFilterHint("matrix", rows.length, c.byMatrix.length);
     els.tblMatrix.innerHTML =
@@ -510,6 +555,7 @@
   }
 
   function renderQuote(c) {
+    renderSlicers("quote", c.quoteRows);
     const rows = prepareRows(c.quoteRows, "quote");
     setFilterHint("quote", rows.length, c.quoteRows.length);
     els.tblQuote.innerHTML =
@@ -599,6 +645,5 @@
 
   els.btnRefresh.onclick = () => loadAll();
   wireSort();
-  wireFilter();
   loadAll();
 })();
