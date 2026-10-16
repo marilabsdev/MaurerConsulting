@@ -23,6 +23,18 @@
     quote: { key: "Je1000", dir: -1 },
   };
 
+  const filterState = {
+    klassen: "",
+    matrix: "",
+    quote: "",
+  };
+
+  const FILTER_FIELDS = {
+    klassen: ["Klasse", "Antraege", "Kosten", "AvgDays"],
+    matrix: ["Warengruppe", "Klasse", "Antraege", "Kosten"],
+    quote: ["Artikelname", "Artikelnummer", "Warengruppe", "Verkauft", "Antraege", "Je1000", "Kosten"],
+  };
+
   const els = {
     years: document.getElementById("years"),
     kpis: document.getElementById("kpis"),
@@ -322,6 +334,42 @@
     });
   }
 
+  function valueHaystack(v) {
+    if (v == null || v === "") return "";
+    if (typeof v === "number") {
+      return (
+        String(v) +
+        " " +
+        v.toLocaleString("de-DE") +
+        " " +
+        Math.round(v).toLocaleString("de-DE")
+      ).toLowerCase();
+    }
+    return String(v).toLowerCase();
+  }
+
+  function filterRows(rows, table) {
+    const q = (filterState[table] || "").trim().toLowerCase();
+    if (!q) return rows;
+    const fields = FILTER_FIELDS[table] || [];
+    return rows.filter((r) => fields.some((f) => valueHaystack(r[f]).includes(q)));
+  }
+
+  function prepareRows(rows, table) {
+    return sortRows(filterRows(rows, table), table);
+  }
+
+  function setFilterHint(table, shown, total) {
+    const el = document.querySelector('[data-hint="' + table + '"]');
+    if (!el) return;
+    const q = (filterState[table] || "").trim();
+    if (!q) {
+      el.textContent = total ? total + " Zeilen" : "";
+      return;
+    }
+    el.textContent = shown + " von " + total;
+  }
+
   function syncSortHeaders() {
     document.querySelectorAll("th.sortable[data-table]").forEach((th) => {
       const s = sortState[th.dataset.table];
@@ -342,6 +390,17 @@
           sortState[t].key = k;
           sortState[t].dir = th.dataset.type === "str" ? 1 : -1;
         }
+        render();
+      });
+    });
+  }
+
+  function wireFilter() {
+    document.querySelectorAll("input.table-filter[data-filter]").forEach((inp) => {
+      const t = inp.dataset.filter;
+      inp.value = filterState[t] || "";
+      inp.addEventListener("input", () => {
+        filterState[t] = inp.value;
         render();
       });
     });
@@ -386,7 +445,8 @@
 
   function renderKlassen(c) {
     const chartRows = [...c.byKlasse].sort((a, b) => b.Antraege - a.Antraege);
-    const tableRows = sortRows(c.byKlasse, "klassen");
+    const tableRows = prepareRows(c.byKlasse, "klassen");
+    setFilterHint("klassen", tableRows.length, c.byKlasse.length);
     const max = Math.max(1, ...chartRows.map((r) => r.Antraege));
     const padL = 8,
       padR = 8,
@@ -416,35 +476,48 @@
           .join("")}
       </svg>`;
 
-    els.tblKlassen.innerHTML = tableRows
-      .map(
-        (r) => `<tr>
+    els.tblKlassen.innerHTML =
+      tableRows.length === 0
+        ? `<tr><td colspan="4">Keine Treffer.</td></tr>`
+        : tableRows
+            .map(
+              (r) => `<tr>
         <td>${r.Klasse}</td>
         <td class="num">${num(r.Antraege)}</td>
         <td class="num">${euro(r.Kosten)}</td>
         <td class="num">${r.AvgDays != null ? num(r.AvgDays) : "–"}</td>
       </tr>`
-      )
-      .join("");
+            )
+            .join("");
   }
 
   function renderMatrix(c) {
-    els.tblMatrix.innerHTML = sortRows(c.byMatrix, "matrix")
-      .map(
-        (r) => `<tr>
+    const rows = prepareRows(c.byMatrix, "matrix");
+    setFilterHint("matrix", rows.length, c.byMatrix.length);
+    els.tblMatrix.innerHTML =
+      rows.length === 0
+        ? `<tr><td colspan="4">Keine Treffer.</td></tr>`
+        : rows
+            .map(
+              (r) => `<tr>
         <td>${r.Warengruppe}</td>
         <td>${r.Klasse}</td>
         <td class="num">${num(r.Antraege)}</td>
         <td class="num">${euro(r.Kosten)}</td>
       </tr>`
-      )
-      .join("");
+            )
+            .join("");
   }
 
   function renderQuote(c) {
-    els.tblQuote.innerHTML = sortRows(c.quoteRows, "quote")
-      .map(
-        (r) => `<tr>
+    const rows = prepareRows(c.quoteRows, "quote");
+    setFilterHint("quote", rows.length, c.quoteRows.length);
+    els.tblQuote.innerHTML =
+      rows.length === 0
+        ? `<tr><td colspan="6">Keine Treffer.</td></tr>`
+        : rows
+            .map(
+              (r) => `<tr>
         <td>${r.Artikelname}<div class="files">${r.Artikelnummer}</div></td>
         <td>${r.Warengruppe}</td>
         <td class="num">${num(r.Verkauft)}</td>
@@ -452,8 +525,8 @@
         <td class="num">${r.Je1000 != null ? r.Je1000.toFixed(1) : "–"}</td>
         <td class="num">${euro(r.Kosten)}</td>
       </tr>`
-      )
-      .join("");
+            )
+            .join("");
   }
 
   function renderFreitext(c) {
@@ -526,5 +599,6 @@
 
   els.btnRefresh.onclick = () => loadAll();
   wireSort();
+  wireFilter();
   loadAll();
 })();

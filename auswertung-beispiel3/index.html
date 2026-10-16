@@ -63,7 +63,11 @@
       </p>
       <div id="chartKlassenSum" class="chart-sum"></div>
       <div id="chartKlassen"></div>
-      <div style="overflow-x:auto;margin-top:12px">
+      <div class="table-toolbar">
+        <input type="search" class="table-filter" data-filter="klassen" placeholder="Filtern (z. B. Stoff, Isofix)…" />
+        <span class="table-filter-hint" data-hint="klassen"></span>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px">
         <table>
           <thead>
             <tr>
@@ -83,7 +87,11 @@
       <p class="text" style="margin-bottom:10px">
         Kreuzt Fehlerklasse mit Warengruppe — typische Hersteller-Matrix für Priorisierung.
       </p>
-      <div style="overflow-x:auto">
+      <div class="table-toolbar">
+        <input type="search" class="table-filter" data-filter="matrix" placeholder="Filtern (z. B. Warengruppe oder Klasse)…" />
+        <span class="table-filter-hint" data-hint="matrix"></span>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px">
         <table>
           <thead>
             <tr>
@@ -103,7 +111,11 @@
       <p class="text" style="margin-bottom:10px">
         Anträge je 1.000 verkaufte Stück (Artikel mit Umsatz im Jahr). Hohe Quote = Redesign-Kandidat.
       </p>
-      <div style="overflow-x:auto">
+      <div class="table-toolbar">
+        <input type="search" class="table-filter" data-filter="quote" placeholder="Filtern (z. B. Artikelname)…" />
+        <span class="table-filter-hint" data-hint="quote"></span>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px">
         <table>
           <thead>
             <tr>

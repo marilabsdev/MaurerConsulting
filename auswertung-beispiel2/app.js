@@ -22,6 +22,18 @@
     lieferant: { key: "Risiko", dir: -1 },
   };
 
+  const filterState = {
+    klassen: "",
+    artikel: "",
+    lieferant: "",
+  };
+
+  const FILTER_FIELDS = {
+    klassen: ["Lieferant", "Klasse", "Antraege", "Anerkannt", "Kosten"],
+    artikel: ["Artikelname", "Artikelnummer", "Warengruppe", "Lieferant", "Antraege", "Anerkannt", "Kosten"],
+    lieferant: ["Lieferant", "Antraege", "Umsatz", "Risiko", "Kosten"],
+  };
+
   const els = {
     years: document.getElementById("years"),
     kpis: document.getElementById("kpis"),
@@ -402,6 +414,42 @@
     });
   }
 
+  function valueHaystack(v) {
+    if (v == null || v === "") return "";
+    if (typeof v === "number") {
+      return (
+        String(v) +
+        " " +
+        v.toLocaleString("de-DE") +
+        " " +
+        Math.round(v).toLocaleString("de-DE")
+      ).toLowerCase();
+    }
+    return String(v).toLowerCase();
+  }
+
+  function filterRows(rows, table) {
+    const q = (filterState[table] || "").trim().toLowerCase();
+    if (!q) return rows;
+    const fields = FILTER_FIELDS[table] || [];
+    return rows.filter((r) => fields.some((f) => valueHaystack(r[f]).includes(q)));
+  }
+
+  function prepareRows(rows, table) {
+    return sortRows(filterRows(rows, table), table);
+  }
+
+  function setFilterHint(table, shown, total) {
+    const el = document.querySelector('[data-hint="' + table + '"]');
+    if (!el) return;
+    const q = (filterState[table] || "").trim();
+    if (!q) {
+      el.textContent = total ? total + " Zeilen" : "";
+      return;
+    }
+    el.textContent = shown + " von " + total;
+  }
+
   function syncSortHeaders() {
     document.querySelectorAll("th.sortable[data-table]").forEach((th) => {
       const s = sortState[th.dataset.table];
@@ -427,11 +475,23 @@
     });
   }
 
+  function wireFilter() {
+    document.querySelectorAll("input.table-filter[data-filter]").forEach((inp) => {
+      const t = inp.dataset.filter;
+      inp.value = filterState[t] || "";
+      inp.addEventListener("input", () => {
+        filterState[t] = inp.value;
+        render();
+      });
+    });
+  }
+
   function renderKlassen(c) {
     // Chart: Top 12 nach Anträgen; Tabelle: alle, sortierbar
     const all = c.byKlasseLieferant || [];
     const chartRows = [...all].sort((a, b) => b.Antraege - a.Antraege).slice(0, 12);
-    const tableRows = sortRows(all, "klassen");
+    const tableRows = prepareRows(all, "klassen");
+    setFilterHint("klassen", tableRows.length, all.length);
     if (els.chartKlassenSum) {
       els.chartKlassenSum.textContent =
         all.length === 0
@@ -445,7 +505,7 @@
     if (els.tblKlassen) {
       els.tblKlassen.innerHTML =
         tableRows.length === 0
-          ? `<tr><td colspan="5">Keine Daten.</td></tr>`
+          ? `<tr><td colspan="5">${all.length ? "Keine Treffer." : "Keine Daten."}</td></tr>`
           : tableRows
               .map(
                 (r) => `<tr>
@@ -498,29 +558,39 @@
   function renderTables(c) {
     renderKlassen(c);
 
-    els.tblArtikel.innerHTML = sortRows(c.byArt, "artikel")
-      .map(
-        (r) => `<tr>
+    const artikelRows = prepareRows(c.byArt, "artikel");
+    setFilterHint("artikel", artikelRows.length, c.byArt.length);
+    els.tblArtikel.innerHTML =
+      artikelRows.length === 0
+        ? `<tr><td colspan="5">${c.byArt.length ? "Keine Treffer." : "Keine Daten."}</td></tr>`
+        : artikelRows
+            .map(
+              (r) => `<tr>
         <td>${r.Artikelname}<div class="files">${r.Artikelnummer} · ${r.Warengruppe}</div></td>
         <td>${r.Lieferant}</td>
         <td class="num">${num(r.Antraege)}</td>
         <td class="num">${num(r.Anerkannt)}</td>
         <td class="num">${euro(r.Kosten)}</td>
       </tr>`
-      )
-      .join("");
+            )
+            .join("");
 
-    els.tblLieferant.innerHTML = sortRows(c.byLieferant, "lieferant")
-      .map(
-        (r) => `<tr>
+    const lieferantRows = prepareRows(c.byLieferant, "lieferant");
+    setFilterHint("lieferant", lieferantRows.length, c.byLieferant.length);
+    els.tblLieferant.innerHTML =
+      lieferantRows.length === 0
+        ? `<tr><td colspan="5">${c.byLieferant.length ? "Keine Treffer." : "Keine Daten."}</td></tr>`
+        : lieferantRows
+            .map(
+              (r) => `<tr>
         <td>${r.Lieferant}</td>
         <td class="num">${num(r.Antraege)}</td>
         <td class="num">${euro(r.Umsatz)}</td>
         <td class="num">${r.Risiko.toFixed(2)}</td>
         <td class="num">${euro(r.Kosten)}</td>
       </tr>`
-      )
-      .join("");
+            )
+            .join("");
   }
 
   function addChat(text, who) {
@@ -706,5 +776,6 @@
     askChat(els.chatInput.value);
   });
   wireSort();
+  wireFilter();
   loadAll();
 })();
