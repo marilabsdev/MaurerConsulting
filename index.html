@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maurer Consulting – Demos</title>
+  <style>
+    :root {
+      --purple: #2e1477;
+      --bg: #f3f0fa;
+      --line: #ddd6ef;
+      --text: #2b2433;
+      --muted: #6b6275;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--text);
+      background: #faf9fc;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+    h1 {
+      color: var(--purple);
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+    }
+    .lead {
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0 0 24px;
+    }
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #fff 0%, var(--bg) 100%);
+    }
+    .card:hover { border-color: var(--purple); }
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+      color: var(--purple);
+    }
+    .card p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--purple);
+      margin-bottom: 6px;
+    }
+    .note {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Maurer Consulting</h1>
+    <p class="lead">Öffentliche Demo-Projekte (GitHub Pages). Nur Beispieldaten — keine echten Kundendaten.</p>
+
+    <a class="card" href="auswertung-beispiel1/">
+      <div class="tag">Beispiel 1</div>
+      <h2>Auswertung Beispiel 1</h2>
+      <p>Einfache interaktive Umsatz-Grafik mit Klick-Filtern (Jahre / Nord &amp; Süd).</p>
+    </a>
+
+    <a class="card" href="auswertung-beispiel2/">
+      <div class="tag">Beispiel 2</div>
+      <h2>Auswertung Beispiel 2</h2>
+      <p>Komplexere Auswertung aus Excel-Beispieldaten (KPI, Filter, Diagramm, Filialtabelle).</p>
+    </a>
+
+    <a class="card" href="chatbot-beispiel1/">
+      <div class="tag">Beispiel 3</div>
+      <h2>Chatbot Beispiel 1</h2>
+      <p>Klickbarer Demo-Chatbot mit Antworten aus der Wissensdatei wissen.md (ohne n8n).</p>
+    </a>
+
+    <p class="note">
+      Dieses Verzeichnis (<code>projekte-github</code>) ist das GitHub-Repo.
+      Alles hierin ist öffentlich nach dem Push. Dateien außerhalb (übergeordneter Ordner Maurer Consulting) werden nicht mitgepusht.
+    </p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Excel → Web-Auswertung | Maurer Consulting</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="badge">Maurer Consulting · Produkt-Demo</div>
+      <h1>Excel-Daten interaktiv auswerten</h1>
+      <p class="lead">
+        Diese Seite liest Beispieldaten aus einer Excel-Datei
+        (<strong>(data/Beispieldaten.xlsx)</strong> und zeigt Kennzahlen, Filter und Diagramme im Browser —
+        ohne dass Kund:innen komplexe Excel-Auswertungen bauen müssen.
+      </p>
+      <p class="foot actions" style="margin-top:12px;">
+        <a href="data/Beispieldaten.xlsx" download>Excel-Beispieldaten herunterladen</a>
+        &nbsp;·&nbsp;
+        <span id="sourceLabel">Daten werden geladen…</span>
+      </p>
+    </header>
+
+    <section class="panel">
+      <h2>Filter</h2>
+      <div class="row" style="margin-bottom:10px;">
+        <div class="group-label">Jahre</div>
+        <div class="row" id="years"></div>
+      </div>
+      <div class="row">
+        <div class="group-label">Region</div>
+        <div class="row" id="regions"></div>
+      </div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi">
+        <div class="label">Umsatz gesamt</div>
+        <div class="value" id="kpiUmsatz">–</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Transaktionen</div>
+        <div class="value" id="kpiTx">–</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Ø Bon</div>
+        <div class="value" id="kpiAvg">–</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="chart-head">
+        <h2 style="margin:0;">Umsatz nach Jahr &amp; Region</h2>
+        <div class="chart-sum" id="chartSum"></div>
+      </div>
+      <svg id="chart" viewBox="0 0 720 260" role="img" aria-label="Umsatz-Balkendiagramm"></svg>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Filialen im Filter</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Filiale</th>
+            <th>Region</th>
+            <th>Umsatz</th>
+            <th>Transaktionen</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <p class="foot">
+        <strong>Produktidee:</strong> Kundendaten aus Excel strukturieren → klickbare Web-Auswertung
+        (Jahre, Regionen, Kennzahlen) — anpassbar an Branche und Berichtslogik.
+      </p>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

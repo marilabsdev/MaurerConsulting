@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chatbot Beispiel 1 – Maurer Consulting</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="badge">Demo · läuft im Browser</div>
+      <h1>Chatbot Beispiel 1</h1>
+      <p class="lead">
+        Stellen Sie eine Frage — der Bot sucht die Antwort in der Wissensdatei
+        <code>wissen.md</code>. Kein Server, kein n8n, keine echten Kundendaten.
+      </p>
+      <p class="meta"><a href="../">← Übersicht</a> · <a href="wissen.md">Wissen ansehen</a></p>
+    </header>
+
+    <div class="chat" id="chat" aria-live="polite"></div>
+
+    <form class="composer" id="form">
+      <input id="input" type="text" placeholder="z. B. Was bietet Maurer Consulting?" autocomplete="off" />
+      <button type="submit">Senden</button>
+    </form>
+
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

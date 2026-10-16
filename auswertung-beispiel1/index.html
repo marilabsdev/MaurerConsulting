@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demo: Interaktive Umsatz-Auswertung</title>
+  <style>
+    :root {
+      --purple: #2e1477;
+      --purple-soft: #5a3fa8;
+      --purple-bg: #f3f0fa;
+      --line: #ddd6ef;
+      --text: #2b2433;
+      --muted: #6b6275;
+      --white: #ffffff;
+      --bar-nord: #2e1477;
+      --bar-sued: #8b7bc4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      /* Weißer Abstand AUSSERHALB des lila Rahmens (.wrap) */
+      padding: 24px 16px; /* oben/unten 24px, links/rechts 16px — vorher: 0 */
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--text);
+      background: var(--white);
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fff 0%, var(--purple-bg) 100%);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--purple);
+      background: #ece8f6;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 8px;
+    }
+    h2 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      color: var(--purple);
+      font-weight: 700;
+    }
+    .lead {
+      margin: 0 0 14px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .filters {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .group-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    button.chip {
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    button.chip:hover { border-color: var(--purple-soft); color: var(--purple); }
+    button.chip.active {
+      background: var(--purple);
+      border-color: var(--purple);
+      color: #fff;
+    }
+    .chart-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 10px 8px;
+    }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .chart-title { font-size: 0.9rem; font-weight: 600; }
+    .chart-sum { font-size: 0.85rem; color: var(--purple); font-weight: 700; }
+    svg { width: 100%; height: auto; display: block; }
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .dot.nord { background: var(--bar-nord); }
+    .dot.sued { background: var(--bar-sued); }
+    .foot {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .foot strong { color: var(--purple); }
+
+    /* Kompakter auf dem Handy — Google Sites-Rahmen wird vom Code nicht höher */
+    @media (max-width: 600px) {
+      .wrap { padding: 10px 8px 10px; border-radius: 10px; }
+      .badge { margin-bottom: 4px; font-size: 10px; padding: 3px 8px; }
+      h2 { font-size: 1.05rem; margin-bottom: 4px; }
+      .lead { font-size: 0.8rem; margin-bottom: 8px; line-height: 1.35; }
+      .lead .extra { display: none; } /* kürzerer Text auf Mobil */
+      .filters { gap: 6px; margin-bottom: 8px; }
+      .group-label { margin-bottom: 4px; }
+      button.chip { padding: 6px 10px; font-size: 0.8rem; }
+      .chart-card { padding: 8px 6px 6px; }
+      .chart-head { margin-bottom: 4px; }
+      svg { max-height: 170px; }
+      .legend { margin-top: 4px; font-size: 0.75rem; }
+      .foot { margin-top: 8px; font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">Live-Demo · KI &amp; Auswertungen</div>
+    <h2>Umsatz interaktiv auswerten</h2>
+    <p class="lead">
+      Jahre und Regionen antippen — die Grafik aktualisiert sich sofort.
+      <span class="extra">So können Kennzahlen im Browser laufen, ohne eine Excel-Datei zu öffnen. </span>
+      <em>(Beispieldaten)</em>
+    </p>
+
+    <div class="filters">
+      <div>
+        <div class="group-label">Jahre</div>
+        <div class="chips" id="years"></div>
+      </div>
+      <div>
+        <div class="group-label">Region</div>
+        <div class="chips" id="regions"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title" id="chartTitle">Umsatz in Tsd. €</div>
+        <div class="chart-sum" id="chartSum"></div>
+      </div>
+      <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Umsatz-Balkendiagramm"></svg>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <p class="foot">
+      <strong>Idee für Kund:innen:</strong> eigene Daten anbinden — Filter, Vergleiche und Grafiken
+      als klickbare Web-Auswertung statt statischer Excel-Berichte.
+    </p>
+  </div>
+
+  <script>
+    // Beispieldaten (Tsd. €)
+    const DATA = {
+      2024: { Nord: 120, Süd: 95 },
+      2025: { Nord: 145, Süd: 110 },
+      2026: { Nord: 168, Süd: 132 }
+    };
+    const YEARS = Object.keys(DATA);
+    const selectedYears = new Set(["2024", "2025"]);
+    let selectedRegion = "beide"; // nord | sued | beide
+
+    const yearBox = document.getElementById("years");
+    const regionBox = document.getElementById("regions");
+    const svg = document.getElementById("chart");
+    const chartSum = document.getElementById("chartSum");
+    const legend = document.getElementById("legend");
+
+    function renderChips() {
+      yearBox.innerHTML = "";
+      YEARS.forEach((y) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (selectedYears.has(y) ? " active" : "");
+        b.textContent = y;
+        b.onclick = () => {
+          if (selectedYears.has(y)) {
+            if (selectedYears.size === 1) return; // mind. 1 Jahr
+            selectedYears.delete(y);
+          } else {
+            selectedYears.add(y);
+          }
+          render();
+        };
+        yearBox.appendChild(b);
+      });
+
+      regionBox.innerHTML = "";
+      [
+        ["beide", "Nord & Süd"],
+        ["nord", "Nur Nord"],
+        ["sued", "Nur Süd"]
+      ].forEach(([id, label]) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (selectedRegion === id ? " active" : "");
+        b.textContent = label;
+        b.onclick = () => {
+          selectedRegion = id;
+          render();
+        };
+        regionBox.appendChild(b);
+      });
+    }
+
+    function getSeries() {
+      const years = YEARS.filter((y) => selectedYears.has(y));
+      const showNord = selectedRegion === "beide" || selectedRegion === "nord";
+      const showSued = selectedRegion === "beide" || selectedRegion === "sued";
+      return { years, showNord, showSued };
+    }
+
+    function renderChart() {
+      const { years, showNord, showSued } = getSeries();
+      const padL = 42, padR = 16, padT = 18, padB = 36;
+      const W = 640, H = 260;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+
+      let maxVal = 1;
+      let total = 0;
+      years.forEach((y) => {
+        if (showNord) { maxVal = Math.max(maxVal, DATA[y].Nord); total += DATA[y].Nord; }
+        if (showSued) { maxVal = Math.max(maxVal, DATA[y].Süd); total += DATA[y].Süd; }
+      });
+
+      chartSum.textContent = "Summe: " + total.toLocaleString("de-DE") + " Tsd. €";
+
+      const groupCount = years.length;
+      const groupW = innerW / groupCount;
+      const barGap = 8;
+      const barsPerGroup = (showNord ? 1 : 0) + (showSued ? 1 : 0);
+      const barW = Math.min(36, (groupW - barGap * 2) / Math.max(barsPerGroup, 1) - 4);
+
+      let html = "";
+      // grid lines
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + (innerH * i) / 4;
+        const val = Math.round(maxVal * (1 - i / 4));
+        html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e8e3f4" stroke-width="1"/>`;
+        html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#6b6275">${val}</text>`;
+      }
+
+      years.forEach((year, gi) => {
+        const gx = padL + gi * groupW + groupW / 2;
+        let bi = 0;
+        const drawBar = (value, color, label) => {
+          const h = (value / maxVal) * innerH;
+          const x = gx - (barsPerGroup * (barW + 4)) / 2 + bi * (barW + 4);
+          const y = padT + innerH - h;
+          html += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="${color}">
+            <title>${label} ${year}: ${value} Tsd. €</title>
+          </rect>`;
+          html += `<text x="${x + barW / 2}" y="${y - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="#2e1477">${value}</text>`;
+          bi++;
+        };
+        if (showNord) drawBar(DATA[year].Nord, "#2e1477", "Nord");
+        if (showSued) drawBar(DATA[year].Süd, "#8b7bc4", "Süd");
+        html += `<text x="${gx}" y="${H - 12}" text-anchor="middle" font-size="12" fill="#2b2433">${year}</text>`;
+      });
+
+      svg.innerHTML = html;
+
+      let leg = "";
+      if (showNord) leg += `<span><span class="dot nord"></span>Nord</span>`;
+      if (showSued) leg += `<span><span class="dot sued"></span>Süd</span>`;
+      legend.innerHTML = leg;
+    }
+
+    function render() {
+      renderChips();
+      renderChart();
+    }
+
+    render();
+  </script>
+</body>
+</html>

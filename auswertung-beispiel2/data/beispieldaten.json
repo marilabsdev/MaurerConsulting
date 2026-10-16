@@ -1,0 +1,496 @@
+{
+  "meta": {
+    "titel": "Filialumsätze – Beispieldaten",
+    "quelle": "Beispieldaten.xlsx",
+    "hinweis": "Fiktive Demo-Daten für Maurer Consulting",
+    "waehrung": "EUR"
+  },
+  "zeilen": [
+    {
+      "Jahr": 2024,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 42000,
+      "Transaktionen": 510
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 31000,
+      "Transaktionen": 390
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 48000,
+      "Transaktionen": 560
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 35000,
+      "Transaktionen": 420
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 18000,
+      "Transaktionen": 210
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 22000,
+      "Transaktionen": 250
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 39000,
+      "Transaktionen": 480
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 29500,
+      "Transaktionen": 370
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 45500,
+      "Transaktionen": 540
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 33000,
+      "Transaktionen": 400
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 16500,
+      "Transaktionen": 195
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 20500,
+      "Transaktionen": 235
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 45000,
+      "Transaktionen": 540
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 32500,
+      "Transaktionen": 410
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 51000,
+      "Transaktionen": 600
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 37000,
+      "Transaktionen": 450
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 19000,
+      "Transaktionen": 220
+    },
+    {
+      "Jahr": 2024,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 24000,
+      "Transaktionen": 270
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 45500,
+      "Transaktionen": 530
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 34000,
+      "Transaktionen": 415
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 52000,
+      "Transaktionen": 590
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 38500,
+      "Transaktionen": 460
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 20000,
+      "Transaktionen": 230
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 25500,
+      "Transaktionen": 280
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 43000,
+      "Transaktionen": 505
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 32000,
+      "Transaktionen": 395
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 49500,
+      "Transaktionen": 575
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 36000,
+      "Transaktionen": 440
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 18500,
+      "Transaktionen": 215
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 23500,
+      "Transaktionen": 260
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 49000,
+      "Transaktionen": 580
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 35500,
+      "Transaktionen": 440
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 56000,
+      "Transaktionen": 640
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 40500,
+      "Transaktionen": 490
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 21500,
+      "Transaktionen": 245
+    },
+    {
+      "Jahr": 2025,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 27000,
+      "Transaktionen": 300
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 48000,
+      "Transaktionen": 555
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 36000,
+      "Transaktionen": 435
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 54500,
+      "Transaktionen": 610
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 41000,
+      "Transaktionen": 485
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 1,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 22000,
+      "Transaktionen": 250
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 1,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 27500,
+      "Transaktionen": 305
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 46000,
+      "Transaktionen": 535
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 34500,
+      "Transaktionen": 420
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 52500,
+      "Transaktionen": 595
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 39000,
+      "Transaktionen": 470
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 2,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 20500,
+      "Transaktionen": 240
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 2,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 26000,
+      "Transaktionen": 290
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 52000,
+      "Transaktionen": 610
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Bremen City",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 38000,
+      "Transaktionen": 465
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 59000,
+      "Transaktionen": 670
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "Stuttgart König",
+      "Kategorie": "Mode",
+      "Umsatz_EUR": 43500,
+      "Transaktionen": 520
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 3,
+      "Region": "Nord",
+      "Filiale": "Hamburg Centro",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 23500,
+      "Transaktionen": 265
+    },
+    {
+      "Jahr": 2026,
+      "Monat": 3,
+      "Region": "Süd",
+      "Filiale": "München Passage",
+      "Kategorie": "Home",
+      "Umsatz_EUR": 29000,
+      "Transaktionen": 320
+    }
+  ]
+}
