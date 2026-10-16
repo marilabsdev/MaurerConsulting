@@ -602,7 +602,11 @@
     els.btnRefresh.disabled = true;
     els.status.textContent = "Lade Excel-Dateien…";
     try {
-      if (typeof XLSX === "undefined") throw new Error("SheetJS-Bibliothek nicht geladen (CDN).");
+      if (typeof XLSX === "undefined") {
+        throw new Error(
+          "Excel-Bibliothek nicht geladen (vendor/xlsx.full.min.js). Bitte Hard-Reload (Strg+F5). Am PC oft durch alten CDN-/Adblocker-Cache."
+        );
+      }
       const [antraege, artikel, gutschriften, umsatz] = await Promise.all([
         loadSheet(FILES.antraege),
         loadSheet(FILES.artikel),
