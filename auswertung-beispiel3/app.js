@@ -25,7 +25,7 @@
 
   /** Datenschnitte: leeres Set = alle Werte */
   const sliceState = {
-    klassen: { Klasse: new Set() },
+    klassen: { Warengruppe: new Set() },
     matrix: { Warengruppe: new Set(), Klasse: new Set() },
     quote: { Warengruppe: new Set() },
   };
@@ -226,42 +226,30 @@
       ? Math.round(delays.reduce((s, d) => s + d, 0) / delays.length)
       : null;
 
-    // Fehlerklassen
-    const byKlasse = {};
-    const samplesByKlasse = {};
-    antraege.forEach((a) => {
-      const klasse = classifyDefect(a.Defekt_Freitext);
-      if (!byKlasse[klasse]) {
-        byKlasse[klasse] = { Klasse: klasse, Antraege: 0, Kosten: 0, delaySum: 0, delayN: 0 };
-      }
-      byKlasse[klasse].Antraege += 1;
-      if (anerkanntIds.has(a.Antragsnummer)) {
-        byKlasse[klasse].Kosten += kostenByAntrag[a.Antragsnummer] || 0;
-      }
-      const d = daysBetween(a.Kaufdatum, a.Antragsdatum);
-      if (d != null && d >= 0 && d < 3650) {
-        byKlasse[klasse].delaySum += d;
-        byKlasse[klasse].delayN += 1;
-      }
-      if (!samplesByKlasse[klasse]) samplesByKlasse[klasse] = [];
-      const ft = String(a.Defekt_Freitext || "").trim();
-      if (ft && samplesByKlasse[klasse].length < 3 && !samplesByKlasse[klasse].includes(ft)) {
-        samplesByKlasse[klasse].push(ft);
-      }
+    // Anträge mit Warengruppe (für Fehlerklassen-Filter & Matrix)
+    const antraegeWg = antraege.map((a) => {
+      const wg = (arts[a.Artikelnummer] && arts[a.Artikelnummer].Warengruppe) || "?";
+      return { ...a, Warengruppe: wg, Klasse: classifyDefect(a.Defekt_Freitext) };
     });
+    const warengruppen = uniqueSorted(antraegeWg.map((a) => a.Warengruppe));
 
-    Object.values(byKlasse).forEach((row) => {
-      row.AvgDays = row.delayN ? Math.round(row.delaySum / row.delayN) : null;
+    // Fehlerklassen (gesamt; Übersicht wird in renderKlassen nach Warengruppe neu aggregiert)
+    const byKlasse = aggregateKlassen(antraegeWg, anerkanntIds, kostenByAntrag);
+    const samplesByKlasse = {};
+    antraegeWg.forEach((a) => {
+      if (!samplesByKlasse[a.Klasse]) samplesByKlasse[a.Klasse] = [];
+      const ft = String(a.Defekt_Freitext || "").trim();
+      if (ft && samplesByKlasse[a.Klasse].length < 3 && !samplesByKlasse[a.Klasse].includes(ft)) {
+        samplesByKlasse[a.Klasse].push(ft);
+      }
     });
 
     // Matrix: Warengruppe × Fehlerklasse
     const byMatrix = {};
-    antraege.forEach((a) => {
-      const klasse = classifyDefect(a.Defekt_Freitext);
-      const wg = (arts[a.Artikelnummer] && arts[a.Artikelnummer].Warengruppe) || "?";
-      const key = wg + "||" + klasse;
+    antraegeWg.forEach((a) => {
+      const key = a.Warengruppe + "||" + a.Klasse;
       if (!byMatrix[key]) {
-        byMatrix[key] = { Warengruppe: wg, Klasse: klasse, Antraege: 0, Kosten: 0 };
+        byMatrix[key] = { Warengruppe: a.Warengruppe, Klasse: a.Klasse, Antraege: 0, Kosten: 0 };
       }
       byMatrix[key].Antraege += 1;
       if (anerkanntIds.has(a.Antragsnummer)) {
@@ -323,7 +311,50 @@
       byMatrix: Object.values(byMatrix),
       quoteRows,
       samplesByKlasse,
+      antraegeWg,
+      anerkanntIds,
+      kostenByAntrag,
+      warengruppen,
     };
+  }
+
+  function uniqueSorted(vals) {
+    return [...new Set(vals.filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "de", { sensitivity: "base" })
+    );
+  }
+
+  function aggregateKlassen(antraegeWg, anerkanntIds, kostenByAntrag) {
+    const byKlasse = {};
+    antraegeWg.forEach((a) => {
+      const klasse = a.Klasse;
+      if (!byKlasse[klasse]) {
+        byKlasse[klasse] = { Klasse: klasse, Antraege: 0, Kosten: 0, delaySum: 0, delayN: 0 };
+      }
+      byKlasse[klasse].Antraege += 1;
+      if (anerkanntIds.has(a.Antragsnummer)) {
+        byKlasse[klasse].Kosten += kostenByAntrag[a.Antragsnummer] || 0;
+      }
+      const d = daysBetween(a.Kaufdatum, a.Antragsdatum);
+      if (d != null && d >= 0 && d < 3650) {
+        byKlasse[klasse].delaySum += d;
+        byKlasse[klasse].delayN += 1;
+      }
+    });
+    Object.values(byKlasse).forEach((row) => {
+      row.AvgDays = row.delayN ? Math.round(row.delaySum / row.delayN) : null;
+    });
+    return byKlasse;
+  }
+
+  /** Fehlerklassen-Übersicht: nach Datenschnitt Warengruppe neu aggregieren */
+  function klassenForSlicer(c) {
+    const selected = sliceState.klassen.Warengruppe;
+    const rows =
+      selected.size === 0
+        ? c.antraegeWg
+        : c.antraegeWg.filter((a) => selected.has(a.Warengruppe));
+    return Object.values(aggregateKlassen(rows, c.anerkanntIds, c.kostenByAntrag));
   }
 
   function sortRows(rows, table) {
@@ -487,24 +518,58 @@
   }
 
   function renderKlassen(c) {
-    const chartRows = [...c.byKlasse].sort((a, b) => b.Antraege - a.Antraege);
-    renderSlicers("klassen", c.byKlasse);
-    const tableRows = prepareRows(c.byKlasse, "klassen");
-    setFilterHint("klassen", tableRows.length, c.byKlasse.length);
-    const max = Math.max(1, ...chartRows.map((r) => r.Antraege));
+    // Datenschnitt nur Warengruppe — Kennzahlen werden neu aggregiert
+    const sliceRows = (c.warengruppen || []).map((wg) => ({ Warengruppe: wg }));
+    renderSlicers("klassen", sliceRows);
+
+    const byKlasse = klassenForSlicer(c);
+    const chartRows = [...byKlasse].sort((a, b) => b.Antraege - a.Antraege);
+    const tableRows = sortRows(byKlasse, "klassen");
+    const totalAntraege = (c.antraegeWg || []).length;
+    const shownAntraege = chartRows.reduce((s, r) => s + r.Antraege, 0);
+    setFilterHint(
+      "klassen",
+      shownAntraege,
+      totalAntraege
+    );
+    // Hinweis textlich anpassen: Anträge, nicht Tabellenzeilen
+    const hint = document.querySelector('[data-hint="klassen"]');
+    if (hint) {
+      if (!sliceActive("klassen")) {
+        hint.textContent =
+          byKlasse.length +
+          " Fehlerklassen · Datenschnitt Warengruppe filtert die Übersicht";
+      } else {
+        hint.textContent =
+          shownAntraege +
+          " von " +
+          totalAntraege +
+          " Anträgen · " +
+          byKlasse.length +
+          " Klassen · „Alle“ setzt zurück";
+      }
+    }
+
+    const max = Math.max(1, ...chartRows.map((r) => r.Antraege), 1);
     const padL = 8,
-      padR = 8,
       padT = 8,
       padB = 8;
     const rowH = 28;
     const W = 720;
     const barMax = 420;
-    const H = padT + padB + chartRows.length * rowH;
+    const H = padT + padB + Math.max(chartRows.length, 1) * rowH;
 
     els.chartKlassenSum.textContent =
-      chartRows.length + " Klassen · " + euro(chartRows.reduce((s, r) => s + r.Kosten, 0)) + " Kosten";
+      (sliceActive("klassen") ? "Gefiltert · " : "") +
+      chartRows.length +
+      " Klassen · " +
+      euro(chartRows.reduce((s, r) => s + r.Kosten, 0)) +
+      " Kosten";
 
-    els.chartKlassen.innerHTML = `
+    els.chartKlassen.innerHTML =
+      chartRows.length === 0
+        ? `<p class="text">Keine Anträge für diese Warengruppe.</p>`
+        : `
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fehlerklassen">
         ${chartRows
           .map((r, i) => {
@@ -522,7 +587,7 @@
 
     els.tblKlassen.innerHTML =
       tableRows.length === 0
-        ? `<tr><td colspan="4">Keine Treffer.</td></tr>`
+        ? `<tr><td colspan="4">Keine Treffer für diese Warengruppe.</td></tr>`
         : tableRows
             .map(
               (r) => `<tr>
