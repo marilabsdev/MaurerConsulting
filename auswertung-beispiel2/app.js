@@ -47,10 +47,30 @@
   }
 
   function yearOf(iso) {
-    if (!iso) return null;
-    const s = String(iso).slice(0, 10);
-    const y = Number(s.slice(0, 4));
-    return Number.isFinite(y) ? y : null;
+    if (iso == null || iso === "") return null;
+    if (iso instanceof Date && !isNaN(iso)) return iso.getFullYear();
+    // Excel-Seriennummer
+    if (typeof iso === "number" && iso > 20000 && iso < 80000) {
+      const d = new Date(Date.UTC(1899, 11, 30) + iso * 86400000);
+      return d.getUTCFullYear();
+    }
+    const s = String(iso).trim();
+    const m = s.match(/(20\d{2})/);
+    if (m) return Number(m[1]);
+    return null;
+  }
+
+  function pick(row, names) {
+    for (const n of names) {
+      if (row[n] != null && String(row[n]).trim() !== "") return row[n];
+    }
+    // Fallback: Key enthält Teilstring
+    const keys = Object.keys(row || {});
+    for (const want of names) {
+      const found = keys.find((k) => k.toLowerCase().includes(want.toLowerCase().slice(0, 6)));
+      if (found && row[found] != null && String(row[found]).trim() !== "") return row[found];
+    }
+    return "";
   }
 
   async function loadSheet(url) {
@@ -59,7 +79,7 @@
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, { type: "array", cellDates: true });
     const sheet = wb.Sheets[wb.SheetNames[0]];
-    return XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    return XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
   }
 
   function normalizeDate(v) {
@@ -69,22 +89,31 @@
       const d = String(v.getDate()).padStart(2, "0");
       return `${y}-${m}-${d}`;
     }
+    if (typeof v === "number" && v > 20000 && v < 80000) {
+      const dt = new Date(Date.UTC(1899, 11, 30) + v * 86400000);
+      const y = dt.getUTCFullYear();
+      const m = String(dt.getUTCMonth() + 1).padStart(2, "0");
+      const d = String(dt.getUTCDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
     const s = String(v || "").trim();
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    const m = s.match(/(20\d{2})[.\-/](\d{1,2})[.\-/](\d{1,2})/);
+    if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
     return s;
   }
 
   function mapAntraege(rows) {
     return rows.map((r) => ({
-      Kunde_Name: r.Kunde_Name,
-      Kunde_Land: r.Kunde_Land,
-      Antragsdatum: normalizeDate(r.Antragsdatum),
-      Antragsnummer: String(r.Antragsnummer),
-      Artikelnummer: String(r.Artikelnummer),
-      Artikelname: r.Artikelname,
-      Kaufdatum: normalizeDate(r.Kaufdatum),
-      Beantragte_Kostenerstattung_EUR: Number(r.Beantragte_Kostenerstattung_EUR) || 0,
-      Defekt_Freitext: r.Defekt_Freitext,
+      Kunde_Name: pick(r, ["Kunde_Name", "Kunde Name"]),
+      Kunde_Land: pick(r, ["Kunde_Land", "Kunde Land"]),
+      Antragsdatum: normalizeDate(pick(r, ["Antragsdatum"])),
+      Antragsnummer: String(pick(r, ["Antragsnummer"])),
+      Artikelnummer: String(pick(r, ["Artikelnummer"])),
+      Artikelname: pick(r, ["Artikelname"]),
+      Kaufdatum: normalizeDate(pick(r, ["Kaufdatum"])),
+      Beantragte_Kostenerstattung_EUR: Number(pick(r, ["Beantragte_Kostenerstattung_EUR"])) || 0,
+      Defekt_Freitext: String(pick(r, ["Defekt_Freitext", "Defekt", "Freitext"]) || ""),
     }));
   }
 
@@ -343,20 +372,33 @@
 
   function renderKlassen(c) {
     const rows = c.byKlasse || [];
-    els.chartKlassenSum.textContent =
-      "Anträge in Klassen: " + num(rows.reduce((s, r) => s + r.Antraege, 0)) +
-      " · Kosten anerkannter Fälle: " + euro(rows.reduce((s, r) => s + r.Kosten, 0));
+    if (els.chartKlassenSum) {
+      els.chartKlassenSum.textContent =
+        rows.length === 0
+          ? "Keine Klassen — bitte „Daten aktualisieren“ klicken oder Jahr-Filter prüfen."
+          : "Anträge in Klassen: " +
+            num(rows.reduce((s, r) => s + r.Antraege, 0)) +
+            " · Kosten anerkannter Fälle: " +
+            euro(rows.reduce((s, r) => s + r.Kosten, 0));
+    }
 
-    els.tblKlassen.innerHTML = rows
-      .map(
-        (r) => `<tr>
+    if (els.tblKlassen) {
+      els.tblKlassen.innerHTML =
+        rows.length === 0
+          ? `<tr><td colspan="4">Keine Daten in den Fehlerklassen.</td></tr>`
+          : rows
+              .map(
+                (r) => `<tr>
         <td>${r.Klasse}</td>
         <td class="num">${num(r.Antraege)}</td>
         <td class="num">${num(r.Anerkannt)}</td>
         <td class="num">${euro(r.Kosten)}</td>
       </tr>`
-      )
-      .join("");
+              )
+              .join("");
+    }
+
+    if (!els.chartKlassen) return;
 
     // Balken: Anträge je Klasse
     const padL = 48, padR = 16, padT = 20, padB = 70;
@@ -382,8 +424,9 @@
       const h = (r.Antraege / maxVal) * innerH;
       const x = gx - barW / 2;
       const y = padT + innerH - h;
-      html += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 0)}" rx="4" fill="#2e1477"><title>${r.Klasse}: ${r.Antraege}</title></rect>`;
-      const label = r.Klasse.length > 14 ? r.Klasse.slice(0, 12) + "…" : r.Klasse;
+      const name = String(r.Klasse || "");
+      html += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 0)}" rx="4" fill="#2e1477"></rect>`;
+      const label = name.length > 14 ? name.slice(0, 12) + "..." : name;
       html += `<text x="${gx}" y="${H - 28}" text-anchor="middle" font-size="10" fill="#2b2433" transform="rotate(-28 ${gx} ${H - 28})">${label}</text>`;
     });
     els.chartKlassen.innerHTML = html;
@@ -573,10 +616,12 @@
       const years = [...new Set(state.antraege.map((a) => String(yearOf(a.Antragsdatum))).filter(Boolean))].sort();
       state.years = new Set(years.slice(-3));
       state.ready = true;
+      const sampleDefekt = state.antraege[0] ? state.antraege[0].Defekt_Freitext : "";
       els.status.textContent =
         "Aktualisiert: " +
         new Date().toLocaleString("de-DE") +
-        ` · ${state.antraege.length} Anträge, ${state.gutschriften.length} Gutschriften`;
+        ` · ${state.antraege.length} Anträge, ${state.gutschriften.length} Gutschriften` +
+        (sampleDefekt ? " · Freitext OK" : " · Warnung: Defekt-Freitext fehlt");
       render();
       setupChat();
     } catch (err) {
