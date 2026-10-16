@@ -15,6 +15,13 @@
     ready: false,
   };
 
+  /** Sortierung je Tabelle: dir 1 = aufsteigend, -1 = absteigend */
+  const sortState = {
+    klassen: { key: "Antraege", dir: -1 },
+    artikel: { key: "Antraege", dir: -1 },
+    lieferant: { key: "Risiko", dir: -1 },
+  };
+
   const els = {
     years: document.getElementById("years"),
     kpis: document.getElementById("kpis"),
@@ -380,24 +387,66 @@
     els.chartYears.innerHTML = html;
   }
 
+  function sortRows(rows, table) {
+    const { key, dir } = sortState[table];
+    return [...rows].sort((a, b) => {
+      let va = a[key];
+      let vb = b[key];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string" || typeof vb === "string") {
+        return dir * String(va).localeCompare(String(vb), "de", { sensitivity: "base" });
+      }
+      return dir * (Number(va) - Number(vb));
+    });
+  }
+
+  function syncSortHeaders() {
+    document.querySelectorAll("th.sortable[data-table]").forEach((th) => {
+      const s = sortState[th.dataset.table];
+      if (!s) return;
+      if (th.dataset.key === s.key) th.dataset.dir = s.dir === 1 ? "asc" : "desc";
+      else delete th.dataset.dir;
+    });
+  }
+
+  function wireSort() {
+    document.querySelectorAll("th.sortable[data-table]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const t = th.dataset.table;
+        const k = th.dataset.key;
+        if (!sortState[t]) return;
+        if (sortState[t].key === k) sortState[t].dir *= -1;
+        else {
+          sortState[t].key = k;
+          sortState[t].dir = th.dataset.type === "str" ? 1 : -1;
+        }
+        render();
+      });
+    });
+  }
+
   function renderKlassen(c) {
-    // Top-Kombinationen Lieferant × Fehlerklasse (Händler-Sicht)
-    const rows = (c.byKlasseLieferant || []).slice(0, 12);
+    // Chart: Top 12 nach Anträgen; Tabelle: alle, sortierbar
+    const all = c.byKlasseLieferant || [];
+    const chartRows = [...all].sort((a, b) => b.Antraege - a.Antraege).slice(0, 12);
+    const tableRows = sortRows(all, "klassen");
     if (els.chartKlassenSum) {
       els.chartKlassenSum.textContent =
-        rows.length === 0
+        all.length === 0
           ? "Keine Klassen — bitte „Daten aktualisieren“ oder Jahr-Filter prüfen."
           : "Top " +
-            rows.length +
-            " Kombinationen Lieferant × Fehlerklasse · Kosten: " +
-            euro(rows.reduce((s, r) => s + r.Kosten, 0));
+            chartRows.length +
+            " im Diagramm · Tabelle sortierbar · Kosten: " +
+            euro(all.reduce((s, r) => s + r.Kosten, 0));
     }
 
     if (els.tblKlassen) {
       els.tblKlassen.innerHTML =
-        rows.length === 0
+        tableRows.length === 0
           ? `<tr><td colspan="5">Keine Daten.</td></tr>`
-          : rows
+          : tableRows
               .map(
                 (r) => `<tr>
         <td>${r.Lieferant}</td>
@@ -417,14 +466,13 @@
     const innerW = W - padL - padR;
     const innerH = H - padT - padB;
     let maxVal = 1;
-    rows.forEach((r) => {
+    chartRows.forEach((r) => {
       maxVal = Math.max(maxVal, r.Antraege);
     });
-    const n = Math.max(rows.length, 1);
+    const n = Math.max(chartRows.length, 1);
     const groupW = innerW / n;
     const barW = Math.min(28, groupW - 6);
-    // Farbe je Lieferant
-    const lieferanten = [...new Set(rows.map((r) => r.Lieferant))];
+    const lieferanten = [...new Set(chartRows.map((r) => r.Lieferant))];
     const colors = ["#2e1477", "#5a3fa8", "#8b7bc4", "#c4b5e0"];
     const colorOf = (L) => colors[lieferanten.indexOf(L) % colors.length];
 
@@ -435,7 +483,7 @@
       html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e8e3f4" stroke-width="1"/>`;
       html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#6b6275">${val}</text>`;
     }
-    rows.forEach((r, gi) => {
+    chartRows.forEach((r, gi) => {
       const gx = padL + gi * groupW + groupW / 2;
       const h = (r.Antraege / maxVal) * innerH;
       const x = gx - barW / 2;
@@ -450,8 +498,7 @@
   function renderTables(c) {
     renderKlassen(c);
 
-    els.tblArtikel.innerHTML = c.byArt
-      .slice(0, 8)
+    els.tblArtikel.innerHTML = sortRows(c.byArt, "artikel")
       .map(
         (r) => `<tr>
         <td>${r.Artikelname}<div class="files">${r.Artikelnummer} · ${r.Warengruppe}</div></td>
@@ -463,7 +510,7 @@
       )
       .join("");
 
-    els.tblLieferant.innerHTML = c.byLieferant
+    els.tblLieferant.innerHTML = sortRows(c.byLieferant, "lieferant")
       .map(
         (r) => `<tr>
         <td>${r.Lieferant}</td>
@@ -610,6 +657,7 @@
     renderKpis(c);
     renderChart(c.series);
     renderTables(c);
+    syncSortHeaders();
   }
 
   async function loadAll() {
@@ -657,6 +705,6 @@
     e.preventDefault();
     askChat(els.chatInput.value);
   });
-
+  wireSort();
   loadAll();
 })();

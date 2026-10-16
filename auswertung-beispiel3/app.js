@@ -16,6 +16,13 @@
     ready: false,
   };
 
+  /** Sortierung je Tabelle: dir 1 = aufsteigend, -1 = absteigend */
+  const sortState = {
+    klassen: { key: "Kosten", dir: -1 },
+    matrix: { key: "Antraege", dir: -1 },
+    quote: { key: "Je1000", dir: -1 },
+  };
+
   const els = {
     years: document.getElementById("years"),
     kpis: document.getElementById("kpis"),
@@ -285,8 +292,7 @@
           Je1000: sold > 0 ? (c.Antraege / sold) * 1000 : null,
         };
       })
-      .filter((r) => r.Verkauft > 0)
-      .sort((a, b) => (b.Je1000 || 0) - (a.Je1000 || 0));
+      .filter((r) => r.Verkauft > 0);
 
     return {
       antraege: antraege.length,
@@ -294,11 +300,51 @@
       quote,
       kosten,
       avgDays,
-      byKlasse: Object.values(byKlasse).sort((a, b) => b.Kosten - a.Kosten || b.Antraege - a.Antraege),
-      byMatrix: Object.values(byMatrix).sort((a, b) => b.Antraege - a.Antraege),
-      quoteRows: quoteRows.slice(0, 15),
+      byKlasse: Object.values(byKlasse),
+      byMatrix: Object.values(byMatrix),
+      quoteRows,
       samplesByKlasse,
     };
+  }
+
+  function sortRows(rows, table) {
+    const { key, dir } = sortState[table];
+    return [...rows].sort((a, b) => {
+      let va = a[key];
+      let vb = b[key];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string" || typeof vb === "string") {
+        return dir * String(va).localeCompare(String(vb), "de", { sensitivity: "base" });
+      }
+      return dir * (Number(va) - Number(vb));
+    });
+  }
+
+  function syncSortHeaders() {
+    document.querySelectorAll("th.sortable[data-table]").forEach((th) => {
+      const s = sortState[th.dataset.table];
+      if (!s) return;
+      if (th.dataset.key === s.key) th.dataset.dir = s.dir === 1 ? "asc" : "desc";
+      else delete th.dataset.dir;
+    });
+  }
+
+  function wireSort() {
+    document.querySelectorAll("th.sortable[data-table]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const t = th.dataset.table;
+        const k = th.dataset.key;
+        if (!sortState[t]) return;
+        if (sortState[t].key === k) sortState[t].dir *= -1;
+        else {
+          sortState[t].key = k;
+          sortState[t].dir = th.dataset.type === "str" ? 1 : -1;
+        }
+        render();
+      });
+    });
   }
 
   function renderChips() {
@@ -339,8 +385,9 @@
   }
 
   function renderKlassen(c) {
-    const rows = c.byKlasse;
-    const max = Math.max(1, ...rows.map((r) => r.Antraege));
+    const chartRows = [...c.byKlasse].sort((a, b) => b.Antraege - a.Antraege);
+    const tableRows = sortRows(c.byKlasse, "klassen");
+    const max = Math.max(1, ...chartRows.map((r) => r.Antraege));
     const padL = 8,
       padR = 8,
       padT = 8,
@@ -348,14 +395,14 @@
     const rowH = 28;
     const W = 720;
     const barMax = 420;
-    const H = padT + padB + rows.length * rowH;
+    const H = padT + padB + chartRows.length * rowH;
 
     els.chartKlassenSum.textContent =
-      rows.length + " Klassen · " + euro(rows.reduce((s, r) => s + r.Kosten, 0)) + " Kosten";
+      chartRows.length + " Klassen · " + euro(chartRows.reduce((s, r) => s + r.Kosten, 0)) + " Kosten";
 
     els.chartKlassen.innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fehlerklassen">
-        ${rows
+        ${chartRows
           .map((r, i) => {
             const y = padT + i * rowH;
             const w = (r.Antraege / max) * barMax;
@@ -369,7 +416,7 @@
           .join("")}
       </svg>`;
 
-    els.tblKlassen.innerHTML = rows
+    els.tblKlassen.innerHTML = tableRows
       .map(
         (r) => `<tr>
         <td>${r.Klasse}</td>
@@ -382,8 +429,7 @@
   }
 
   function renderMatrix(c) {
-    els.tblMatrix.innerHTML = c.byMatrix
-      .slice(0, 25)
+    els.tblMatrix.innerHTML = sortRows(c.byMatrix, "matrix")
       .map(
         (r) => `<tr>
         <td>${r.Warengruppe}</td>
@@ -396,7 +442,7 @@
   }
 
   function renderQuote(c) {
-    els.tblQuote.innerHTML = c.quoteRows
+    els.tblQuote.innerHTML = sortRows(c.quoteRows, "quote")
       .map(
         (r) => `<tr>
         <td>${r.Artikelname}<div class="files">${r.Artikelnummer}</div></td>
@@ -411,7 +457,7 @@
   }
 
   function renderFreitext(c) {
-    const top = c.byKlasse.slice(0, 4);
+    const top = [...c.byKlasse].sort((a, b) => b.Antraege - a.Antraege).slice(0, 4);
     if (!top.length) {
       els.freitext.innerHTML = '<p class="text">Keine Freitexte.</p>';
       return;
@@ -440,6 +486,7 @@
     renderMatrix(c);
     renderQuote(c);
     renderFreitext(c);
+    syncSortHeaders();
   }
 
   async function loadAll() {
@@ -478,5 +525,6 @@
   }
 
   els.btnRefresh.onclick = () => loadAll();
+  wireSort();
   loadAll();
 })();

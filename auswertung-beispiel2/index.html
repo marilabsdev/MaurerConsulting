@@ -103,11 +103,11 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
       <table>
         <thead>
           <tr>
-            <th>Lieferant</th>
-            <th>Fehlerklasse</th>
-            <th class="num">Anträge</th>
-            <th class="num">Anerkannt</th>
-            <th class="num">Kosten €</th>
+            <th class="sortable" data-table="klassen" data-key="Lieferant" data-type="str">Lieferant</th>
+            <th class="sortable" data-table="klassen" data-key="Klasse" data-type="str">Fehlerklasse</th>
+            <th class="sortable num" data-table="klassen" data-key="Antraege">Anträge</th>
+            <th class="sortable num" data-table="klassen" data-key="Anerkannt">Anerkannt</th>
+            <th class="sortable num" data-table="klassen" data-key="Kosten">Kosten €</th>
           </tr>
         </thead>
         <tbody id="tblKlassen"></tbody>
@@ -119,11 +119,11 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
       <table>
         <thead>
           <tr>
-            <th>Artikel</th>
-            <th>Lieferant</th>
-            <th class="num">Anträge</th>
-            <th class="num">Anerkannt</th>
-            <th class="num">Kosten €</th>
+            <th class="sortable" data-table="artikel" data-key="Artikelname" data-type="str">Artikel</th>
+            <th class="sortable" data-table="artikel" data-key="Lieferant" data-type="str">Lieferant</th>
+            <th class="sortable num" data-table="artikel" data-key="Antraege">Anträge</th>
+            <th class="sortable num" data-table="artikel" data-key="Anerkannt">Anerkannt</th>
+            <th class="sortable num" data-table="artikel" data-key="Kosten">Kosten €</th>
           </tr>
         </thead>
         <tbody id="tblArtikel"></tbody>
@@ -135,11 +135,11 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
       <table>
         <thead>
           <tr>
-            <th>Lieferant</th>
-            <th class="num">Anträge</th>
-            <th class="num">Umsatz €</th>
-            <th class="num">Anträge je 10k € Umsatz</th>
-            <th class="num">Kosten €</th>
+            <th class="sortable" data-table="lieferant" data-key="Lieferant" data-type="str">Lieferant</th>
+            <th class="sortable num" data-table="lieferant" data-key="Antraege">Anträge</th>
+            <th class="sortable num" data-table="lieferant" data-key="Umsatz">Umsatz €</th>
+            <th class="sortable num" data-table="lieferant" data-key="Risiko">Anträge je 10k € Umsatz</th>
+            <th class="sortable num" data-table="lieferant" data-key="Kosten">Kosten €</th>
           </tr>
         </thead>
         <tbody id="tblLieferant"></tbody>

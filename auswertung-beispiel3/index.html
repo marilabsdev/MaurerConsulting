@@ -67,10 +67,10 @@
         <table>
           <thead>
             <tr>
-              <th>Fehlerklasse</th>
-              <th class="num">Anträge</th>
-              <th class="num">Kosten</th>
-              <th class="num">Ø Tage Kauf→Antrag</th>
+              <th class="sortable" data-table="klassen" data-key="Klasse" data-type="str">Fehlerklasse</th>
+              <th class="sortable num" data-table="klassen" data-key="Antraege">Anträge</th>
+              <th class="sortable num" data-table="klassen" data-key="Kosten">Kosten</th>
+              <th class="sortable num" data-table="klassen" data-key="AvgDays">Ø Tage Kauf→Antrag</th>
             </tr>
           </thead>
           <tbody id="tblKlassen"></tbody>
@@ -87,10 +87,10 @@
         <table>
           <thead>
             <tr>
-              <th>Warengruppe</th>
-              <th>Fehlerklasse</th>
-              <th class="num">Anträge</th>
-              <th class="num">Kosten</th>
+              <th class="sortable" data-table="matrix" data-key="Warengruppe" data-type="str">Warengruppe</th>
+              <th class="sortable" data-table="matrix" data-key="Klasse" data-type="str">Fehlerklasse</th>
+              <th class="sortable num" data-table="matrix" data-key="Antraege">Anträge</th>
+              <th class="sortable num" data-table="matrix" data-key="Kosten">Kosten</th>
             </tr>
           </thead>
           <tbody id="tblMatrix"></tbody>
@@ -107,12 +107,12 @@
         <table>
           <thead>
             <tr>
-              <th>Artikel</th>
-              <th>Warengruppe</th>
-              <th class="num">Verkauft</th>
-              <th class="num">Anträge</th>
-              <th class="num">je 1.000</th>
-              <th class="num">Kosten</th>
+              <th class="sortable" data-table="quote" data-key="Artikelname" data-type="str">Artikel</th>
+              <th class="sortable" data-table="quote" data-key="Warengruppe" data-type="str">Warengruppe</th>
+              <th class="sortable num" data-table="quote" data-key="Verkauft">Verkauft</th>
+              <th class="sortable num" data-table="quote" data-key="Antraege">Anträge</th>
+              <th class="sortable num" data-table="quote" data-key="Je1000">je 1.000</th>
+              <th class="sortable num" data-table="quote" data-key="Kosten">Kosten</th>
             </tr>
           </thead>
           <tbody id="tblQuote"></tbody>
