@@ -4,12 +4,18 @@
   const input = document.getElementById("input");
   const suggestions = document.getElementById("suggestions");
 
+  // Maximal 10 Shortcuts — Fokus Firmenwissen Babymarkt + Doku
   const prompts = [
-    "Was bietet Maurer Consulting?",
+    "Welcher Kinderwagen bei extrem unwegsamem Gelände?",
+    "Welcher Kinderwagen bei kleinem Kofferraum?",
+    "Welcher Autositz bei einem sehr schweren Kind?",
+    "Autositz für BMW mit schräger Rückbank oder VW Bus?",
+    "Mein Kind ist 105 cm, 4 Jahre, 18 kg – welcher Autositz?",
+    "Was ist der Unterschied zwischen i-Size und der alten Norm?",
+    "Baby mit Neurodermitis – welche Kleidung?",
+    "In welchem Verhältnis Babymilch anmischen?",
+    "Warum reicht Google bei Kindersitzen oft nicht?",
     "Wird bei Projekten immer dokumentiert?",
-    "Brauche ich n8n?",
-    "Was ist mit Excel-Auswertung?",
-    "Werden meine Chats gespeichert?",
   ];
 
   let sections = [];
@@ -45,6 +51,16 @@
       if (section.hay.includes(w)) s += 1;
       if (section.title.toLowerCase().includes(w)) s += 2;
     });
+    // Themen-Boosts
+    if (/gelände|unwegsam|wald|kies|thule|jogger/.test(q) && /gelände|thule|unwegsam/.test(section.hay)) s += 6;
+    if (/koffer|klein|falt|lara|pockit|reisebuggy/.test(q) && /koffer|lara|falt/.test(section.hay)) s += 6;
+    if (/schwer|50\s*kg|36\s*kg|stretch|pallas|solution/.test(q) && /schwer|stretch|50|36/.test(section.hay)) s += 6;
+    if (/bmw|schräg|vw|bus|multivan|t6|isofix|besafe|level/.test(q) && /bmw|bus|schräg|typenliste|besafe/.test(section.hay)) s += 8;
+    if (/105|cm|kg|jahre|alter|größe|norm|i-size|r44|r129/.test(q) && /norm|i-size|größe|r44|r129|105/.test(section.hay)) s += 6;
+    if (/neuro|haut|ausschlag|engel|gots|baumwolle|ekzem/.test(q) && /neuro|engel|haut|gots/.test(section.hay)) s += 6;
+    if (/milch|mischen|messlöffel|fläsch|hipp|verhältnis|30\s*ml/.test(q) && /milch|messlöffel|30|hipp/.test(section.hay)) s += 6;
+    if (/google|intern|firmenwissen|spezial/.test(q) && /google|firmenwissen|typenliste/.test(section.hay)) s += 5;
+    if (/dokument|ausfall|abhängig/.test(q) && /dokument|ausfall/.test(section.hay)) s += 6;
     return s;
   }
 
@@ -57,8 +73,7 @@
     if (!ranked.length) {
       return (
         "Dazu steht in der Demo-Wissensdatei nichts Passendes.\n\n" +
-        "Probieren Sie z. B.: Leistungen, Excel, n8n, Kontakt oder Datenschutz.\n" +
-        "Das Wissen können Sie in wissen.md anpassen."
+        "Nutzen Sie einen der Vorschläge unten — z. B. Gelände-Kinderwagen, Kofferraum, Autositz-Normen, Neurodermitis oder Babymilch."
       );
     }
 
@@ -100,9 +115,10 @@
     .then((md) => {
       sections = parseMarkdown(md);
       addMsg(
-        "Hallo! Ich bin das Demo-Chatbot von Maurer Consulting.\n" +
-          "Meine Antworten kommen aus wissen.md (fiktives Beispielwissen).\n" +
-          "Stellen Sie eine Frage oder tippen Sie einen Vorschlag unten an.",
+        "Hallo! Ich bin der Demo-Fachchatbot mit Babymarkt-Firmenwissen.\n" +
+          "Fragen zu Kinderwagen, Autositzen (inkl. Spezialfahrzeuge), Haut/Kleidung und Babymilch — " +
+          "plus warum Dokumentation bei IT-Projekten wichtig ist.\n" +
+          "Tippen Sie einen Shortcut an oder schreiben Sie frei.",
         "bot"
       );
     })
