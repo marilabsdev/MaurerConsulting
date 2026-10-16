@@ -77,17 +77,28 @@ kunden = [
     ("König Felix", "DE"),
 ]
 
+# Freitext wie in Kundenmails — Klassifikation erfolgt später auf der Webseite
 defekte = [
-    "Radlager blockiert nach wenigen Wochen",
-    "Gurtschloss lässt sich nicht einrasten",
-    "Naht am Ohr aufgetrennt, Füllung kommt raus",
-    "Druckknöpfe lösen sich",
-    "Schiebegriff wackelt stark",
-    "Bezug reißt an der Naht",
-    "Isofix-Fuß rastet nicht ein",
-    "Farbe blutet stark aus beim Waschen",
-    "Stoff am Sitzbezug scheuert durch",
-    "Auge vom Kuscheltier abgefallen (Verschluckungsgefahr)",
+    "Hallo, das Radlager blockiert seit gestern komplett, wir kommen kaum noch vorwärts.",
+    "Gurtschloss klickt nicht mehr richtig ein, Kind war schon fast raus.",
+    "Am Kuscheltier ist die Naht am Ohr aufgetrennt und die Füllung kommt raus.",
+    "Die Druckknöpfe am Body lösen sich nach 2× Waschen.",
+    "Schiebegriff wackelt stark und knackt bei jeder Bordsteinkante.",
+    "Bezug am Sitz reißt an der Naht, Stoff ist dünn geworden.",
+    "Isofix-Fuß rastet nicht ein, Sitz wackelt im Auto.",
+    "Farbe blutet stark aus beim Waschen, alles rosa verfärbt.",
+    "Stoff am Sitzbezug scheuert durch, schon ein Loch.",
+    "Auge vom Kuscheltier abgefallen – Verschluckungsgefahr!!!",
+    "Vorderrad lässt sich nicht mehr schwenken, klemmt ständig.",
+    "Luftreifen hat zum dritten Mal einen Platten.",
+    "Hosenträgergurt lässt sich nicht mehr verkürzen.",
+    "Magnethalter am Verdeck ist abgebrochen.",
+    "Top-Tether Haken am Autositz klemmt.",
+    "Nach dem Waschen ist der Strampler eingelaufen und hart.",
+    "Plastikteil am Greifling ist angesprungen, scharfe Kante.",
+    "Bremshebel am Kinderwagen greift nicht mehr zuverlässig.",
+    "Kopfstütze am Autositz arretiert nicht in der Höhe.",
+    "Reißverschluss am Fußsack klemmt und hat Zähne verloren.",
 ]
 
 # Verkaufspreise (beantragte Erstattung) grob EK * Marge

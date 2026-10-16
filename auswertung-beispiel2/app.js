@@ -22,6 +22,9 @@
     chartSum: document.getElementById("chartSum"),
     tblArtikel: document.getElementById("tblArtikel"),
     tblLieferant: document.getElementById("tblLieferant"),
+    tblKlassen: document.getElementById("tblKlassen"),
+    chartKlassen: document.getElementById("chartKlassen"),
+    chartKlassenSum: document.getElementById("chartKlassenSum"),
     status: document.getElementById("status"),
     error: document.getElementById("error"),
     btnRefresh: document.getElementById("btnRefresh"),
@@ -144,6 +147,21 @@
     return state.umsatz.filter((u) => state.years.has(String(u.Jahr)));
   }
 
+  /** Klassifiziert Kunden-Freitext (regelbasiert, ohne LLM). */
+  function classifyDefect(text) {
+    const t = String(text || "").toLowerCase();
+    if (/rad|reifen|platte|schwenk|fahrwerk|bremse|lager/.test(t)) return "Räder / Fahrwerk";
+    if (/gurt|schloss|knopf|reißverschluss|hosenträger|magnethalter|verdeck|druckknopf/.test(t))
+      return "Gurte / Verschlüsse / Verdeck";
+    if (/naht|stoff|bezug|füll|ohr|scheuer|eingelaufen|fußsack/.test(t)) return "Stoff / Nähte / Bezug";
+    if (/isofix|top-?tether|stützfuß|kopfstütze|arretiert/.test(t)) return "Isofix / Autositz-Mechanik";
+    if (/einrast/.test(t) && /sitz|isofix|fuß/.test(t)) return "Isofix / Autositz-Mechanik";
+    if (/farbe|waschen|verfärb/.test(t)) return "Farbe / Waschen";
+    if (/auge|verschluck|scharf|angesprungen|plastik/.test(t)) return "Sicherheit / Kleinteile";
+    if (/griff|gestell|wackel|knack/.test(t)) return "Griff / Gestell";
+    return "Sonstiges / unklar";
+  }
+
   function compute() {
     const antraege = filteredAntraege();
     const { gs, anerkanntIds } = anerkanntSet(antraege);
@@ -153,6 +171,24 @@
     const kosten = gs.reduce((s, g) => s + g.Erstattete_Kosten_EUR, 0);
     const mengeErsatz = gs.filter((g) => String(g.Art).includes("Ersatz")).reduce((s, g) => s + g.Menge, 0);
     const quote = antraege.length ? anerkanntIds.size / antraege.length : 0;
+
+    // Kosten je Antrag aus Gutschriften
+    const kostenByAntrag = {};
+    gs.forEach((g) => {
+      kostenByAntrag[g.Antragsnummer] = (kostenByAntrag[g.Antragsnummer] || 0) + g.Erstattete_Kosten_EUR;
+    });
+
+    // Fehlerklassen aus Freitext
+    const byKlasse = {};
+    antraege.forEach((a) => {
+      const klasse = classifyDefect(a.Defekt_Freitext);
+      if (!byKlasse[klasse]) byKlasse[klasse] = { Klasse: klasse, Antraege: 0, Anerkannt: 0, Kosten: 0 };
+      byKlasse[klasse].Antraege += 1;
+      if (anerkanntIds.has(a.Antragsnummer)) {
+        byKlasse[klasse].Anerkannt += 1;
+        byKlasse[klasse].Kosten += kostenByAntrag[a.Antragsnummer] || 0;
+      }
+    });
 
     // per article
     const byArt = {};
@@ -230,6 +266,7 @@
       mengeErsatz,
       byArt: Object.values(byArt).sort((a, b) => b.Antraege - a.Antraege),
       byLieferant: Object.values(byLieferant).sort((a, b) => b.Risiko - a.Risiko),
+      byKlasse: Object.values(byKlasse).sort((a, b) => b.Antraege - a.Antraege),
       series,
     };
   }
@@ -304,7 +341,57 @@
     els.chartYears.innerHTML = html;
   }
 
+  function renderKlassen(c) {
+    const rows = c.byKlasse || [];
+    els.chartKlassenSum.textContent =
+      "Anträge in Klassen: " + num(rows.reduce((s, r) => s + r.Antraege, 0)) +
+      " · Kosten anerkannter Fälle: " + euro(rows.reduce((s, r) => s + r.Kosten, 0));
+
+    els.tblKlassen.innerHTML = rows
+      .map(
+        (r) => `<tr>
+        <td>${r.Klasse}</td>
+        <td class="num">${num(r.Antraege)}</td>
+        <td class="num">${num(r.Anerkannt)}</td>
+        <td class="num">${euro(r.Kosten)}</td>
+      </tr>`
+      )
+      .join("");
+
+    // Balken: Anträge je Klasse
+    const padL = 48, padR = 16, padT = 20, padB = 70;
+    const W = 720, H = 260;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    let maxVal = 1;
+    rows.forEach((r) => {
+      maxVal = Math.max(maxVal, r.Antraege);
+    });
+    const n = Math.max(rows.length, 1);
+    const groupW = innerW / n;
+    const barW = Math.min(36, groupW - 10);
+    let html = "";
+    for (let i = 0; i <= 4; i++) {
+      const y = padT + (innerH * i) / 4;
+      const val = Math.round(maxVal * (1 - i / 4));
+      html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e8e3f4" stroke-width="1"/>`;
+      html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#6b6275">${val}</text>`;
+    }
+    rows.forEach((r, gi) => {
+      const gx = padL + gi * groupW + groupW / 2;
+      const h = (r.Antraege / maxVal) * innerH;
+      const x = gx - barW / 2;
+      const y = padT + innerH - h;
+      html += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 0)}" rx="4" fill="#2e1477"><title>${r.Klasse}: ${r.Antraege}</title></rect>`;
+      const label = r.Klasse.length > 14 ? r.Klasse.slice(0, 12) + "…" : r.Klasse;
+      html += `<text x="${gx}" y="${H - 28}" text-anchor="middle" font-size="10" fill="#2b2433" transform="rotate(-28 ${gx} ${H - 28})">${label}</text>`;
+    });
+    els.chartKlassen.innerHTML = html;
+  }
+
   function renderTables(c) {
+    renderKlassen(c);
+
     els.tblArtikel.innerHTML = c.byArt
       .slice(0, 8)
       .map(

@@ -4,7 +4,6 @@
   const input = document.getElementById("input");
   const suggestions = document.getElementById("suggestions");
 
-  // Maximal 10 Shortcuts — Fokus Firmenwissen Babymarkt + Doku
   const prompts = [
     "Welcher Kinderwagen bei extrem unwegsamem Gelände?",
     "Welcher Kinderwagen bei kleinem Kofferraum?",
@@ -16,6 +15,19 @@
     "In welchem Verhältnis Babymilch anmischen?",
     "Warum reicht Google bei Kindersitzen oft nicht?",
     "Wird bei Projekten immer dokumentiert?",
+  ];
+
+  // Freitext → Wissens-Abschnitt (ohne LLM: feste Themen-Zuordnung)
+  const routes = [
+    { id: "gelände", re: /gelände|unwegsam|wald|kies|feld|outdoor|wandern|jogger|luftreifen|thule|offroad|schotter/, titleHint: /gelände|unwegsam|thule/i },
+    { id: "koffer", re: /koffer|klein|falt|packmaß|reise|urlaub|flug|lara|pockit|kompakt|platzspar/, titleHint: /koffer|klein|falt/i },
+    { id: "schwer", re: /schwer|übergewicht|50\s*kg|36\s*kg|großes kind|dickes baby|stretch|pallas|solution/, titleHint: /schwer|stretch|50|36/i },
+    { id: "spezialauto", re: /bmw|schräg|rückbank|vw\s*bus|multivan|t6|t5|isofix mitt|typenliste|besafe|level technology/, titleHint: /bmw|bus|schräg|speziell|typenliste|besafe/i },
+    { id: "norm", re: /i-?size|r44|r129|norm|gewichtsklasse|körpergröße|105\s*cm|18\s*kg|jahre alt|welcher autositz/, titleHint: /norm|i-size|größe|alter|gewicht|105/i },
+    { id: "haut", re: /neuro|haut|ausschlag|ekzem|atop|engel|gots|baumwolle|empfindlich|allerg/, titleHint: /neuro|haut|engel|gots|kleidung/i },
+    { id: "milch", re: /milch|fläsch|anmisch|messlöffel|hipp|verhältnis|30\s*ml|pulver|nahrung/, titleHint: /milch|messlöffel|verhältnis|nahrung/i },
+    { id: "google", re: /google|intern|firmenwissen|warum.*nicht|spezialist/, titleHint: /google|firmenwissen|intern/i },
+    { id: "doku", re: /dokument|ausfall|abhängig|it-firma|weiterarbeit/, titleHint: /dokument|ausfall/i },
   ];
 
   let sections = [];
@@ -34,7 +46,7 @@
     parts.forEach((block) => {
       const lines = block.trim().split("\n");
       if (!lines.length) return;
-      let title = lines[0].replace(/^#+\s*/, "").trim();
+      const title = lines[0].replace(/^#+\s*/, "").trim();
       const body = lines.slice(1).join("\n").trim();
       if (!title) return;
       out.push({ title, body, hay: (title + "\n" + body).toLowerCase() });
@@ -42,48 +54,48 @@
     return out;
   }
 
-  function score(query, section) {
-    const q = query.toLowerCase().replace(/[?!.,]/g, " ");
-    const words = q.split(/\s+/).filter((w) => w.length > 2);
-    if (!words.length) return 0;
-    let s = 0;
-    words.forEach((w) => {
-      if (section.hay.includes(w)) s += 1;
-      if (section.title.toLowerCase().includes(w)) s += 2;
-    });
-    // Themen-Boosts
-    if (/gelände|unwegsam|wald|kies|thule|jogger/.test(q) && /gelände|thule|unwegsam/.test(section.hay)) s += 6;
-    if (/koffer|klein|falt|lara|pockit|reisebuggy/.test(q) && /koffer|lara|falt/.test(section.hay)) s += 6;
-    if (/schwer|50\s*kg|36\s*kg|stretch|pallas|solution/.test(q) && /schwer|stretch|50|36/.test(section.hay)) s += 6;
-    if (/bmw|schräg|vw|bus|multivan|t6|isofix|besafe|level/.test(q) && /bmw|bus|schräg|typenliste|besafe/.test(section.hay)) s += 8;
-    if (/105|cm|kg|jahre|alter|größe|norm|i-size|r44|r129/.test(q) && /norm|i-size|größe|r44|r129|105/.test(section.hay)) s += 6;
-    if (/neuro|haut|ausschlag|engel|gots|baumwolle|ekzem/.test(q) && /neuro|engel|haut|gots/.test(section.hay)) s += 6;
-    if (/milch|mischen|messlöffel|fläsch|hipp|verhältnis|30\s*ml/.test(q) && /milch|messlöffel|30|hipp/.test(section.hay)) s += 6;
-    if (/google|intern|firmenwissen|spezial/.test(q) && /google|firmenwissen|typenliste/.test(section.hay)) s += 5;
-    if (/dokument|ausfall|abhängig/.test(q) && /dokument|ausfall/.test(section.hay)) s += 6;
-    return s;
+  function findSectionByTitleHint(hint) {
+    return sections.find((s) => hint.test(s.title) || hint.test(s.hay));
   }
 
   function answer(query) {
-    const ranked = sections
-      .map((sec) => ({ sec, s: score(query, sec) }))
-      .filter((x) => x.s > 0)
-      .sort((a, b) => b.s - a.s);
+    const q = query.toLowerCase();
 
-    if (!ranked.length) {
-      return (
-        "Dazu steht in der Demo-Wissensdatei nichts Passendes.\n\n" +
-        "Nutzen Sie einen der Vorschläge unten — z. B. Gelände-Kinderwagen, Kofferraum, Autositz-Normen, Neurodermitis oder Babymilch."
-      );
+    // 1) Feste Themen-Routen (damit Freitext nicht „wild“ mischt)
+    for (const route of routes) {
+      if (route.re.test(q)) {
+        const sec = findSectionByTitleHint(route.titleHint);
+        if (sec) {
+          return sec.title + "\n\n" + sec.body.replace(/\n{3,}/g, "\n\n").trim();
+        }
+      }
     }
 
-    const top = ranked.slice(0, 2);
-    return top
-      .map((x) => {
-        const body = x.sec.body.replace(/\n{3,}/g, "\n\n").trim();
-        return x.sec.title + "\n\n" + (body || "(kein Text)");
-      })
-      .join("\n\n—\n\n");
+    // 2) Fallback: bestes einzelnes Kapitel nach Wort-Score (nur 1 Treffer, Mindestscore)
+    const words = q.replace(/[?!.,]/g, " ").split(/\s+/).filter((w) => w.length > 3);
+    let best = null;
+    let bestScore = 0;
+    sections.forEach((sec) => {
+      let s = 0;
+      words.forEach((w) => {
+        if (sec.hay.includes(w)) s += 1;
+        if (sec.title.toLowerCase().includes(w)) s += 2;
+      });
+      if (s > bestScore) {
+        bestScore = s;
+        best = sec;
+      }
+    });
+
+    if (best && bestScore >= 2) {
+      return best.title + "\n\n" + best.body.replace(/\n{3,}/g, "\n\n").trim();
+    }
+
+    return (
+      "Dazu habe ich in der Wissensdatei keinen klaren Treffer.\n\n" +
+      "Hinweis: In dieser Demo steckt kein Sprachmodell (LLM), sondern Firmenwissen aus wissen.md mit Themen-Zuordnung.\n" +
+      "Bitte Shortcut nutzen oder z. B. schreiben: „Gelände“, „Kofferraum“, „BMW“, „Neurodermitis“, „Babymilch“, „Dokumentation“."
+    );
   }
 
   function ask(q) {
@@ -115,10 +127,9 @@
     .then((md) => {
       sections = parseMarkdown(md);
       addMsg(
-        "Hallo! Ich bin der Demo-Fachchatbot mit Babymarkt-Firmenwissen.\n" +
-          "Fragen zu Kinderwagen, Autositzen (inkl. Spezialfahrzeuge), Haut/Kleidung und Babymilch — " +
-          "plus warum Dokumentation bei IT-Projekten wichtig ist.\n" +
-          "Tippen Sie einen Shortcut an oder schreiben Sie frei.",
+        "Hallo! Demo-Fachchatbot mit Babymarkt-Firmenwissen.\n" +
+          "Kein LLM — Antworten kommen aus wissen.md (Themen-Matching).\n" +
+          "Shortcut antippen oder frei tippen (z. B. „Waldweg Kinderwagen“, „Babymilch mischen“).",
         "bot"
       );
     })

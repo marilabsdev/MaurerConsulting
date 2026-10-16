@@ -38,7 +38,7 @@
         (Excel, ERP-Export oder Warenwirtschaft):
       </p>
       <ol class="table-list">
-        <li><strong>01_Antraege.xlsx</strong> — Kund:in, Land, Antragsdatum/-nummer, Artikel, Kaufdatum, beantragte Erstattung, Defekt (Freitext)</li>
+        <li><strong>01_Antraege.xlsx</strong> — Kund:in, Land, Antragsdatum/-nummer, Artikel, Kaufdatum, beantragte Erstattung, Defekt als <em>Freitext</em> (wie in der Kundenmail) — wird auf der Seite automatisch in Fehlerklassen sortiert</li>
         <li><strong>02_Artikelstamm.xlsx</strong> — Artikelnummer/-name, Einkaufspreis, Warengruppe, Lieferant (ERP)</li>
         <li><strong>03_Gutschriften.xlsx</strong> — anerkannte Fälle: Gutschrift oder Ersatz 1:1, Menge, erstattete Kosten, Datum</li>
         <li><strong>04_Umsatz.xlsx</strong> — Umsatz und Verkaufsmenge je Artikel, Lieferant und Monat</li>
@@ -86,6 +86,29 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
         <span><span class="dot a"></span>Anträge</span>
         <span><span class="dot b"></span>Anerkannt</span>
       </div>
+    </section>
+
+    <section class="panel">
+      <h2>Fehlerklassen aus Kunden-Freitext</h2>
+      <p class="text" style="margin-bottom:10px;">
+        Der Defekt-Text aus der Antragstabelle wird automatisch klassifiziert
+        (regelbasiert, ohne LLM). Kosten = Summe der verknüpften Gutschriften/Ersatzfälle.
+      </p>
+      <div class="chart-head">
+        <span class="chart-sum" id="chartKlassenSum"></span>
+      </div>
+      <svg id="chartKlassen" viewBox="0 0 720 260" role="img" aria-label="Fehlerklassen"></svg>
+      <table>
+        <thead>
+          <tr>
+            <th>Fehlerklasse</th>
+            <th class="num">Anträge</th>
+            <th class="num">Anerkannt</th>
+            <th class="num">Kosten €</th>
+          </tr>
+        </thead>
+        <tbody id="tblKlassen"></tbody>
+      </table>
     </section>
 
     <section class="panel">
