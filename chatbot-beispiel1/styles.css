@@ -82,15 +82,33 @@ h1 {
 
 .back:hover { border-color: var(--purple); }
 
+.ask-label {
+  margin: 4px 0 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--purple);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 .chat {
-  flex: 1;
+  flex: 1 1 auto;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--white);
   padding: 12px;
   overflow-y: auto;
-  min-height: 280px;
-  max-height: 52vh;
+  min-height: 200px;
+  max-height: 40vh;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -118,17 +136,31 @@ h1 {
 }
 
 .composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
   display: flex;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
+  padding: 10px 0 4px;
+  background: linear-gradient(180deg, rgba(250, 249, 252, 0) 0%, #faf9fc 28%, #faf9fc 100%);
 }
 
 .composer input {
   flex: 1;
-  border: 1px solid var(--line);
+  border: 2px solid var(--purple);
   border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
+  padding: 12px 14px;
+  font-size: 16px; /* verhindert iOS-Zoom, besser tippbar */
+  background: #fff;
+  color: var(--text);
+  min-width: 0;
+  pointer-events: auto;
+}
+
+.composer input:focus {
+  outline: 2px solid var(--purple-soft);
+  outline-offset: 1px;
 }
 
 .composer button {
@@ -136,9 +168,11 @@ h1 {
   background: var(--purple);
   color: #fff;
   border-radius: 999px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .composer button:hover { background: var(--purple-soft); }
@@ -147,7 +181,9 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 0;
+  max-height: 28vh;
+  overflow-y: auto;
 }
 
 .suggestions button {

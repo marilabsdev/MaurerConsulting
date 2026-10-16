@@ -21,12 +21,14 @@
 
     <div class="chat" id="chat" aria-live="polite"></div>
 
+    <p class="ask-label">Shortcuts (antippen) oder eigene Frage eingeben:</p>
+    <div class="suggestions" id="suggestions"></div>
+
     <form class="composer" id="form">
-      <input id="input" type="text" placeholder="z. B. Was bietet Maurer Consulting?" autocomplete="off" />
+      <label class="sr-only" for="input">Eigene Frage</label>
+      <input id="input" type="text" name="frage" placeholder="Eigene Frage tippen, z. B. Welcher Buggy für Reisen?" autocomplete="off" enterkeyhint="send" />
       <button type="submit">Senden</button>
     </form>
-
-    <div class="suggestions" id="suggestions"></div>
   </div>
   <script src="app.js"></script>
 </body>
