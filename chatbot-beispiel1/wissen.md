@@ -1,4 +1,4 @@
-# Wissen: Maurer Consulting (Demo-Chatbot)
+﻿# Wissen: Maurer Consulting (Demo-Chatbot)
 
 Dies ist **Beispieldaten** für die Demo — keine echten Kundendaten.
 
@@ -19,7 +19,13 @@ Dieser Bot beantwortet Fragen anhand dieser Wissensdatei. Er zeigt, wie ein FAQ-
 
 ## Excel und Web-Auswertung
 
-Statt nur in Excel zu arbeiten, können Kennzahlen als klickbare Web-Auswertung erscheinen (Jahre, Regionen, Diagramme). Demo-Seiten: „Auswertung einfach 1“ und „Auswertung komplex 1“ auf dieser GitHub-Pages-Übersicht.
+Statt nur in Excel zu arbeiten, können Kennzahlen als klickbare Web-Auswertung erscheinen (Jahre, Regionen, Diagramme, Reklamationen). Demo-Seiten: „Auswertung Beispiel 1“ und „Auswertung Beispiel 2“ auf dieser GitHub-Pages-Übersicht.
+
+## Wird bei Projekten immer dokumentiert?
+
+Ja. Wenn Maurer Consulting etwas für Kund:innen baut (z. B. Web-Auswertung, Chatbot, Automatisierung), gehört dazu eine **umfangreiche Dokumentation**. Ziel: Die Kund:innen können danach **selbstständig weiterarbeiten** — mit eigener IT, einer IT-Firma, jemandem für KI, Webcoding oder Low-Code.
+
+So bleibt man **nicht abhängig** von einem einzelnen externen Dienstleister. Probleme lassen sich intern oder mit anderen Partnern beheben. Das **Ausfallrisiko** (wenn jemand ausfällt oder nicht mehr verfügbar ist) wird dadurch stark reduziert bzw. praktisch aufgehoben — weil Wissen und Bedienung nachvollziehbar festgehalten sind.
 
 ## Wie kontaktiere ich Maurer Consulting?
 
@@ -32,7 +38,7 @@ Das hängt vom Umfang ab. In einem kurzen Gespräch klären wir Ziel, Datenlage 
 ## Brauche ich n8n oder einen Cloud-Agenten?
 
 Für dieses Demo: **nein**. Wissen liegt in einer Markdown-Datei, Antworten laufen im Browser.  
-Für einen echten KI-Agenten mit E-Mail, CRM, Terminbuchung oder LLM (ChatGPT o. Ä.) braucht man später oft eine Automatisierungsplattform (z. B. n8n) oder eine API — das ist die nächste Ausbaustufe, nicht dieses Beispiel.
+Für einen echten KI-Agenten mit E-Mail, CRM, Terminbuchung oder LLM (ChatGPT o. Ä.) braucht man später oft eine Automatisierungsplattform (z. B. n8n) oder eine API — das ist die nächste Ausbaustufe, nicht dieses Beispiel.
 
 ## Datenschutz in dieser Demo
 

@@ -6,6 +6,7 @@
 
   const prompts = [
     "Was bietet Maurer Consulting?",
+    "Wird bei Projekten immer dokumentiert?",
     "Brauche ich n8n?",
     "Was ist mit Excel-Auswertung?",
     "Werden meine Chats gespeichert?",

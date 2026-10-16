@@ -3,79 +3,136 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Excel → Web-Auswertung | Maurer Consulting</title>
+  <title>Auswertung Beispiel 2 – Gewährleistung Babyartikel</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="page">
+    <a class="back" href="../">← Zurück zur Übersicht</a>
+
     <header class="hero">
       <div class="badge">Maurer Consulting · Produkt-Demo</div>
-      <h1>Excel-Daten interaktiv auswerten</h1>
+      <h1>Gewährleistung &amp; Reklamationen – interaktive Auswertung</h1>
       <p class="lead">
-        Diese Seite liest Beispieldaten aus einer Excel-Datei
-        (<strong>(data/Beispieldaten.xlsx)</strong> und zeigt Kennzahlen, Filter und Diagramme im Browser —
-        ohne dass Kund:innen komplexe Excel-Auswertungen bauen müssen.
+        Beispieldaten im Stil eines Babymarkts (Kinderwagen, Autositze, Kuscheltiere, Babykleidung).
+        Die Kennzahlen kommen ausschließlich aus den vier Excel-Dateien im Ordner <code>data/</code>.
       </p>
-      <p class="foot actions" style="margin-top:12px;">
-        <a href="data/Beispieldaten.xlsx" download>Excel-Beispieldaten herunterladen</a>
-        &nbsp;·&nbsp;
-        <span id="sourceLabel">Daten werden geladen…</span>
-      </p>
+      <div class="refresh-bar">
+        <button type="button" id="btnRefresh">Daten aktualisieren</button>
+        <div class="refresh-hint">
+          Neue Monatsdaten? Die vier Excel-Dateien ersetzen, dann hier klicken —
+          die Auswertung lädt die Dateien neu (ohne die Seite neu programmieren zu müssen).
+        </div>
+        <div id="status"></div>
+      </div>
     </header>
+
+    <div id="error" class="err" hidden></div>
+
+    <section class="panel">
+      <h2>Ausgangslage</h2>
+      <p class="text">
+        Kund:innen melden per Mail Reklamationen zu gekauften Babyartikeln.
+        Daraus entstehen typischerweise vier Tabellen, die die meisten Händler schon irgendwo führen
+        (Excel, ERP-Export oder Warenwirtschaft):
+      </p>
+      <ol class="table-list">
+        <li><strong>01_Antraege.xlsx</strong> — Kund:in, Land, Antragsdatum/-nummer, Artikel, Kaufdatum, beantragte Erstattung, Defekt (Freitext)</li>
+        <li><strong>02_Artikelstamm.xlsx</strong> — Artikelnummer/-name, Einkaufspreis, Warengruppe, Lieferant (ERP)</li>
+        <li><strong>03_Gutschriften.xlsx</strong> — anerkannte Fälle: Gutschrift oder Ersatz 1:1, Menge, erstattete Kosten, Datum</li>
+        <li><strong>04_Umsatz.xlsx</strong> — Umsatz und Verkaufsmenge je Artikel, Lieferant und Monat</li>
+      </ol>
+      <p class="files" style="margin-top:10px;">
+        Verknüpfung über <code>Antragsnummer</code> und <code>Artikelnummer</code>.
+        Noch keine Gutschrift = Antrag (noch) nicht anerkannt.
+      </p>
+    </section>
+
+    <section class="prompt-box">
+      <h2>Prompt (Beispiel für die KI-Umsetzung)</h2>
+      <p class="text" style="margin-bottom:10px;">
+        So könnte der Auftrag an die KI lauten — daraus entsteht in wenigen Minuten eine Web-Auswertung wie diese Seite:
+      </p>
+      <pre>Bitte nimm diese vier Excel-Tabellen (Anträge, Artikelstamm, Gutschriften/Ersatz, Umsatz)
+und füge die Daten so zusammen, dass ich Kennzahlen im Jahresvergleich erkennen kann.
+
+Baue mir eine interaktive Webseite (letzte 3 Jahre filterbar) mit u. a.:
+– Anzahl Anträge, Anerkennungsquote, Kosten der anerkannten Fälle
+– welche Artikel am häufigsten kaputt gehen / reklamiert werden (auch Mengen)
+– von welchem Lieferanten ich mich trennen sollte (viele Reklamationen relativ zum Umsatz)
+– Artikel, die oft reklamiert werden, aber trotzdem Gewinn bringen
+– Artikel, die selten reklamiert werden, bei denen ich aber draufzahle (wenig Umsatz/Marge)
+
+Die Auswertung soll sich ausschließlich auf die Excel-Dateien beziehen.
+Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einspielen kann.</pre>
+    </section>
 
     <section class="panel">
       <h2>Filter</h2>
-      <div class="row" style="margin-bottom:10px;">
-        <div class="group-label">Jahre</div>
-        <div class="row" id="years"></div>
-      </div>
-      <div class="row">
-        <div class="group-label">Region</div>
-        <div class="row" id="regions"></div>
-      </div>
+      <div class="group-label">Jahre</div>
+      <div class="chips" id="years"></div>
     </section>
 
-    <section class="kpis">
-      <div class="kpi">
-        <div class="label">Umsatz gesamt</div>
-        <div class="value" id="kpiUmsatz">–</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Transaktionen</div>
-        <div class="value" id="kpiTx">–</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Ø Bon</div>
-        <div class="value" id="kpiAvg">–</div>
-      </div>
-    </section>
+    <section class="kpis" id="kpis"></section>
 
     <section class="panel">
       <div class="chart-head">
-        <h2 style="margin:0;">Umsatz nach Jahr &amp; Region</h2>
+        <h2 style="margin:0;">Anträge vs. anerkannte Fälle (Jahresvergleich)</h2>
         <div class="chart-sum" id="chartSum"></div>
       </div>
-      <svg id="chart" viewBox="0 0 720 260" role="img" aria-label="Umsatz-Balkendiagramm"></svg>
-      <div class="legend" id="legend"></div>
+      <svg id="chartYears" viewBox="0 0 720 260" role="img" aria-label="Jahresvergleich"></svg>
+      <div class="legend">
+        <span><span class="dot a"></span>Anträge</span>
+        <span><span class="dot b"></span>Anerkannt</span>
+      </div>
     </section>
 
     <section class="panel">
-      <h2>Filialen im Filter</h2>
+      <h2>Top reklamierte Artikel (Menge / Anträge)</h2>
       <table>
         <thead>
           <tr>
-            <th>Filiale</th>
-            <th>Region</th>
-            <th>Umsatz</th>
-            <th>Transaktionen</th>
+            <th>Artikel</th>
+            <th>Lieferant</th>
+            <th class="num">Anträge</th>
+            <th class="num">Anerkannt</th>
+            <th class="num">Kosten €</th>
           </tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="tblArtikel"></tbody>
       </table>
-      <p class="foot">
-        <strong>Produktidee:</strong> Kundendaten aus Excel strukturieren → klickbare Web-Auswertung
-        (Jahre, Regionen, Kennzahlen) — anpassbar an Branche und Berichtslogik.
+    </section>
+
+    <section class="panel">
+      <h2>Lieferanten-Risiko</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Lieferant</th>
+            <th class="num">Anträge</th>
+            <th class="num">Umsatz €</th>
+            <th class="num">Anträge je 10k € Umsatz</th>
+            <th class="num">Kosten €</th>
+          </tr>
+        </thead>
+        <tbody id="tblLieferant"></tbody>
+      </table>
+      <p class="files" style="margin-top:8px;">Höherer Wert bei „Anträge je 10k € Umsatz“ = problematischer relativ zum Geschäft.</p>
+    </section>
+
+    <section class="chat-box">
+      <h2>Fragen zu den Excel-Daten (Demo-Chat)</h2>
+      <p class="text" style="margin-bottom:10px;">
+        Ja — genau das geht: Der Chat unten rechnet live aus denselben geladenen Excel-Daten
+        (kein separates System). Beispiele antippen oder eigene Frage stellen.
       </p>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <form class="composer" id="chatForm">
+        <input id="chatInput" type="text" placeholder="z. B. Von welchem Lieferanten sollte ich mich trennen?" autocomplete="off" />
+        <button type="submit">Fragen</button>
+      </form>
+      <div class="suggestions" id="chatSuggestions"></div>
     </section>
   </div>
   <script src="app.js"></script>

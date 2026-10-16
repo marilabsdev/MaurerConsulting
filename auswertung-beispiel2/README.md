@@ -1,9 +1,18 @@
-# Excel → Web-Auswertung
+# Auswertung Beispiel 2 – Gewährleistung / Reklamationen
 
-Unterprojekt von **Maurer Consulting**.
+## Excel-Dateien (`data/`)
 
-- Quelle: `data/Beispieldaten.xlsx` (fiktiv, später nach Vorgabe anpassen)
-- Web liest: `data/beispieldaten.json` (aus dem Excel erzeugt)
-- Neu erzeugen: `python scripts/build_sample_data.py`
+| Datei | Inhalt |
+|-------|--------|
+| `01_Antraege.xlsx` | Kundenanträge aus Reklamationen |
+| `02_Artikelstamm.xlsx` | ERP: EK, Warengruppe, Lieferant |
+| `03_Gutschriften.xlsx` | Anerkannte Erstattungen / Ersatz 1:1 |
+| `04_Umsatz.xlsx` | Umsatz & Menge je Artikel/Lieferant/Monat |
 
-Pages-Pfad: `/projekte/excel-auswertung-web/`
+Neu erzeugen:
+
+```powershell
+python scripts/build_sample_data.py
+```
+
+Auf der Webseite: **Daten aktualisieren** lädt die vier Dateien neu.

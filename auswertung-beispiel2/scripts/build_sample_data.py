@@ -1,82 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Erzeugt Beispieldaten.xlsx + beispieldaten.json für die Demo-Webseite."""
+"""Erzeugt 4 Excel-Beispieldateien für Gewährleistungs-/Reklamations-Auswertung (Babyartikel)."""
+from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from openpyxl.utils import get_column_letter
-import json
-from pathlib import Path
+from datetime import date, timedelta
+import random
+
+random.seed(42)
 
 base = Path(__file__).resolve().parents[1]
 data_dir = base / "data"
 data_dir.mkdir(parents=True, exist_ok=True)
 
-headers = ["Jahr", "Monat", "Region", "Filiale", "Kategorie", "Umsatz_EUR", "Transaktionen"]
-
-seed = [
-    (2024, 1, "Nord", "Hamburg Centro", "Mode", 42000, 510),
-    (2024, 1, "Nord", "Bremen City", "Mode", 31000, 390),
-    (2024, 1, "Süd", "München Passage", "Mode", 48000, 560),
-    (2024, 1, "Süd", "Stuttgart König", "Mode", 35000, 420),
-    (2024, 1, "Nord", "Hamburg Centro", "Home", 18000, 210),
-    (2024, 1, "Süd", "München Passage", "Home", 22000, 250),
-    (2024, 2, "Nord", "Hamburg Centro", "Mode", 39000, 480),
-    (2024, 2, "Nord", "Bremen City", "Mode", 29500, 370),
-    (2024, 2, "Süd", "München Passage", "Mode", 45500, 540),
-    (2024, 2, "Süd", "Stuttgart König", "Mode", 33000, 400),
-    (2024, 2, "Nord", "Hamburg Centro", "Home", 16500, 195),
-    (2024, 2, "Süd", "München Passage", "Home", 20500, 235),
-    (2024, 3, "Nord", "Hamburg Centro", "Mode", 45000, 540),
-    (2024, 3, "Nord", "Bremen City", "Mode", 32500, 410),
-    (2024, 3, "Süd", "München Passage", "Mode", 51000, 600),
-    (2024, 3, "Süd", "Stuttgart König", "Mode", 37000, 450),
-    (2024, 3, "Nord", "Hamburg Centro", "Home", 19000, 220),
-    (2024, 3, "Süd", "München Passage", "Home", 24000, 270),
-    (2025, 1, "Nord", "Hamburg Centro", "Mode", 45500, 530),
-    (2025, 1, "Nord", "Bremen City", "Mode", 34000, 415),
-    (2025, 1, "Süd", "München Passage", "Mode", 52000, 590),
-    (2025, 1, "Süd", "Stuttgart König", "Mode", 38500, 460),
-    (2025, 1, "Nord", "Hamburg Centro", "Home", 20000, 230),
-    (2025, 1, "Süd", "München Passage", "Home", 25500, 280),
-    (2025, 2, "Nord", "Hamburg Centro", "Mode", 43000, 505),
-    (2025, 2, "Nord", "Bremen City", "Mode", 32000, 395),
-    (2025, 2, "Süd", "München Passage", "Mode", 49500, 575),
-    (2025, 2, "Süd", "Stuttgart König", "Mode", 36000, 440),
-    (2025, 2, "Nord", "Hamburg Centro", "Home", 18500, 215),
-    (2025, 2, "Süd", "München Passage", "Home", 23500, 260),
-    (2025, 3, "Nord", "Hamburg Centro", "Mode", 49000, 580),
-    (2025, 3, "Nord", "Bremen City", "Mode", 35500, 440),
-    (2025, 3, "Süd", "München Passage", "Mode", 56000, 640),
-    (2025, 3, "Süd", "Stuttgart König", "Mode", 40500, 490),
-    (2025, 3, "Nord", "Hamburg Centro", "Home", 21500, 245),
-    (2025, 3, "Süd", "München Passage", "Home", 27000, 300),
-    (2026, 1, "Nord", "Hamburg Centro", "Mode", 48000, 555),
-    (2026, 1, "Nord", "Bremen City", "Mode", 36000, 435),
-    (2026, 1, "Süd", "München Passage", "Mode", 54500, 610),
-    (2026, 1, "Süd", "Stuttgart König", "Mode", 41000, 485),
-    (2026, 1, "Nord", "Hamburg Centro", "Home", 22000, 250),
-    (2026, 1, "Süd", "München Passage", "Home", 27500, 305),
-    (2026, 2, "Nord", "Hamburg Centro", "Mode", 46000, 535),
-    (2026, 2, "Nord", "Bremen City", "Mode", 34500, 420),
-    (2026, 2, "Süd", "München Passage", "Mode", 52500, 595),
-    (2026, 2, "Süd", "Stuttgart König", "Mode", 39000, 470),
-    (2026, 2, "Nord", "Hamburg Centro", "Home", 20500, 240),
-    (2026, 2, "Süd", "München Passage", "Home", 26000, 290),
-    (2026, 3, "Nord", "Hamburg Centro", "Mode", 52000, 610),
-    (2026, 3, "Nord", "Bremen City", "Mode", 38000, 465),
-    (2026, 3, "Süd", "München Passage", "Mode", 59000, 670),
-    (2026, 3, "Süd", "Stuttgart König", "Mode", 43500, 520),
-    (2026, 3, "Nord", "Hamburg Centro", "Home", 23500, 265),
-    (2026, 3, "Süd", "München Passage", "Home", 29000, 320),
-]
-
-rows = [dict(zip(headers, t)) for t in seed]
-
-wb = Workbook()
-ws = wb.active
-ws.title = "Umsatzdaten"
-
+PURPLE = "2E1477"
 header_font = Font(bold=True, color="FFFFFF")
-header_fill = PatternFill("solid", fgColor="2E1477")
+header_fill = PatternFill("solid", fgColor=PURPLE)
 thin = Border(
     left=Side(style="thin", color="DDDDDD"),
     right=Side(style="thin", color="DDDDDD"),
@@ -84,45 +22,272 @@ thin = Border(
     bottom=Side(style="thin", color="DDDDDD"),
 )
 
-for col, h in enumerate(headers, 1):
-    cell = ws.cell(1, col, h)
-    cell.font = header_font
-    cell.fill = header_fill
-    cell.alignment = Alignment(horizontal="center")
-    cell.border = thin
 
-for r_i, row in enumerate(rows, 2):
-    for c_i, h in enumerate(headers, 1):
-        cell = ws.cell(r_i, c_i, row[h])
+def style_header(ws, headers):
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(1, col, h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center", wrap_text=True)
         cell.border = thin
-        if h == "Umsatz_EUR":
-            cell.number_format = "#,##0"
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[chr(64 + col) if col <= 26 else "A"].width = 18
+    # better widths
+    from openpyxl.utils import get_column_letter
 
-for col in range(1, len(headers) + 1):
-    ws.column_dimensions[get_column_letter(col)].width = 16
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[get_column_letter(col)].width = max(14, min(28, len(headers[col - 1]) + 4))
 
-ws2 = wb.create_sheet("Hinweis")
-ws2["A1"] = "Maurer Consulting – Beispieldaten (fiktiv)"
-ws2["A1"].font = Font(bold=True, color="2E1477", size=14)
-ws2["A3"] = "Diese Datei ist ein Demo-Datensatz für interaktive Web-Auswertungen."
-ws2["A4"] = "Keine echten Kundendaten. Regionen Nord/Süd, Filialen und Umsätze sind erfunden."
-ws2["A6"] = "Spalten: Jahr, Monat, Region, Filiale, Kategorie, Umsatz_EUR, Transaktionen"
-ws2.column_dimensions["A"].width = 90
 
-xlsx_path = data_dir / "Beispieldaten.xlsx"
-wb.save(xlsx_path)
+def write_rows(ws, headers, rows):
+    style_header(ws, headers)
+    for r_i, row in enumerate(rows, 2):
+        for c_i, h in enumerate(headers, 1):
+            cell = ws.cell(r_i, c_i, row[h])
+            cell.border = thin
 
-json_path = data_dir / "beispieldaten.json"
-payload = {
-    "meta": {
-        "titel": "Filialumsätze – Beispieldaten",
-        "quelle": "Beispieldaten.xlsx",
-        "hinweis": "Fiktive Demo-Daten für Maurer Consulting",
-        "waehrung": "EUR",
-    },
-    "zeilen": rows,
-}
-json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-print("Wrote", xlsx_path)
-print("Wrote", json_path)
-print("Rows", len(rows))
+
+# --- Artikelstamm (ERP) ---
+# Lieferant A: viele Spielzeug-/Kuscheltier-Probleme (Demo-Story)
+artikel = [
+    {"Artikelnummer": "KW-110", "Artikelname": "Kinderwagen City Cruiser Pro", "Einkaufspreis_EUR": 189.0, "Warengruppe": "Kinderwagen", "Lieferant": "NordBaby GmbH"},
+    {"Artikelnummer": "KW-220", "Artikelname": "Buggy Traunstein Light", "Einkaufspreis_EUR": 95.0, "Warengruppe": "Kinderwagen", "Lieferant": "AlpenKids KG"},
+    {"Artikelnummer": "AS-310", "Artikelname": "Autositz BabySafe i-Size", "Einkaufspreis_EUR": 142.0, "Warengruppe": "Autositze", "Lieferant": "SüdImport AG"},
+    {"Artikelnummer": "AS-320", "Artikelname": "Autositz DuoFix Reboard", "Einkaufspreis_EUR": 168.0, "Warengruppe": "Autositze", "Lieferant": "SüdImport AG"},
+    {"Artikelnummer": "KT-410", "Artikelname": "Kuscheltier Hase Flecki", "Einkaufspreis_EUR": 8.5, "Warengruppe": "Spielzeug", "Lieferant": "NordBaby GmbH"},
+    {"Artikelnummer": "KT-420", "Artikelname": "Kuscheltier Bär Alpen", "Einkaufspreis_EUR": 11.0, "Warengruppe": "Spielzeug", "Lieferant": "NordBaby GmbH"},
+    {"Artikelnummer": "KT-430", "Artikelname": "Greifling Holzring Baby", "Einkaufspreis_EUR": 6.2, "Warengruppe": "Spielzeug", "Lieferant": "NordBaby GmbH"},
+    {"Artikelnummer": "BK-510", "Artikelname": "Babybody Set 3er Bio", "Einkaufspreis_EUR": 12.4, "Warengruppe": "Babykleidung", "Lieferant": "AlpenKids KG"},
+    {"Artikelnummer": "BK-520", "Artikelname": "Strampler Wolkenweich", "Einkaufspreis_EUR": 15.8, "Warengruppe": "Babykleidung", "Lieferant": "AlpenKids KG"},
+    {"Artikelnummer": "BK-530", "Artikelname": "Mütze & Schal Set", "Einkaufspreis_EUR": 9.9, "Warengruppe": "Babykleidung", "Lieferant": "SüdImport AG"},
+]
+
+kunden = [
+    ("Müller Anna", "DE"),
+    ("Schmidt Tom", "DE"),
+    ("Wagner Lisa", "AT"),
+    ("Bauer Klaus", "DE"),
+    ("Huber Maria", "AT"),
+    ("Fischer Jan", "DE"),
+    ("Weber Sophie", "CH"),
+    ("Meyer Paul", "DE"),
+    ("Koch Elena", "DE"),
+    ("Richter Noah", "AT"),
+    ("Lehmann Mia", "DE"),
+    ("König Felix", "DE"),
+]
+
+defekte = [
+    "Radlager blockiert nach wenigen Wochen",
+    "Gurtschloss lässt sich nicht einrasten",
+    "Naht am Ohr aufgetrennt, Füllung kommt raus",
+    "Druckknöpfe lösen sich",
+    "Schiebegriff wackelt stark",
+    "Bezug reißt an der Naht",
+    "Isofix-Fuß rastet nicht ein",
+    "Farbe blutet stark aus beim Waschen",
+    "Stoff am Sitzbezug scheuert durch",
+    "Auge vom Kuscheltier abgefallen (Verschluckungsgefahr)",
+]
+
+# Verkaufspreise (beantragte Erstattung) grob EK * Marge
+vk = {a["Artikelnummer"]: round(a["Einkaufspreis_EUR"] * random.uniform(1.7, 2.4), 2) for a in artikel}
+
+# --- Anträge über 2024-2026 ---
+antraege = []
+antrags_nr = 1000
+# Bias: Spielzeug von NordBaby häufiger
+weights = []
+for a in artikel:
+    w = 4 if a["Lieferant"] == "NordBaby GmbH" and a["Warengruppe"] == "Spielzeug" else 1.2
+    if a["Warengruppe"] == "Kinderwagen":
+        w = 1.5
+    weights.append(w)
+
+start = date(2024, 1, 5)
+end = date(2026, 3, 28)
+d = start
+while d <= end:
+    # ~2-5 Anträge pro Woche
+    if d.weekday() < 5 and random.random() < 0.55:
+        n = random.randint(1, 3)
+        for _ in range(n):
+            art = random.choices(artikel, weights=weights, k=1)[0]
+            kunde = random.choice(kunden)
+            kauf = d - timedelta(days=random.randint(20, 400))
+            antrags_nr += 1
+            antraege.append(
+                {
+                    "Kunde_Name": kunde[0],
+                    "Kunde_Land": kunde[1],
+                    "Antragsdatum": d.isoformat(),
+                    "Antragsnummer": f"GW-{antrags_nr}",
+                    "Artikelnummer": art["Artikelnummer"],
+                    "Artikelname": art["Artikelname"],
+                    "Kaufdatum": kauf.isoformat(),
+                    "Beantragte_Kostenerstattung_EUR": vk[art["Artikelnummer"]],
+                    "Defekt_Freitext": random.choice(defekte),
+                }
+            )
+    d += timedelta(days=1)
+
+# --- Gutschriften / Ersatz (nicht jeder Antrag anerkannt) ---
+# Spielzeug NordBaby: höhere Anerkennungsquote + viele Fälle
+gutschriften = []
+gs_nr = 5000
+for ant in antraege:
+    art = next(x for x in artikel if x["Artikelnummer"] == ant["Artikelnummer"])
+    p_ok = 0.55
+    if art["Warengruppe"] == "Spielzeug" and art["Lieferant"] == "NordBaby GmbH":
+        p_ok = 0.82
+    elif art["Warengruppe"] == "Babykleidung":
+        p_ok = 0.40
+    if random.random() > p_ok:
+        continue  # nicht anerkannt
+    gs_nr += 1
+    antrags_dt = date.fromisoformat(ant["Antragsdatum"])
+    gs_dt = antrags_dt + timedelta(days=random.randint(3, 25))
+    if gs_dt > end:
+        gs_dt = end
+    # Ersatz 1:1 vs Geld-Erstattung
+    if art["Warengruppe"] == "Spielzeug" and random.random() < 0.45:
+        art_typ = "Ersatz_1zu1"
+        erstattet = 0.0
+        menge = 1
+        bemerkung = "Retoure + Neuausgabe gleicher Artikel, Bon Summe 0"
+    else:
+        art_typ = "Kostenerstattung"
+        # oft EK oder Anteil VK
+        erstattet = round(art["Einkaufspreis_EUR"] * random.uniform(0.9, 1.15), 2)
+        menge = 1
+        bemerkung = "Gutschrift an Kunden"
+    gutschriften.append(
+        {
+            "Antragsnummer": ant["Antragsnummer"],
+            "Gutschrift_Rechnung_Nr": f"GS-{gs_nr}",
+            "Datum_Gutschrift": gs_dt.isoformat(),
+            "Artikelnummer": ant["Artikelnummer"],
+            "Artikelname": ant["Artikelname"],
+            "Art": art_typ,
+            "Menge": menge,
+            "Erstattete_Kosten_EUR": erstattet,
+            "Bemerkung": bemerkung,
+        }
+    )
+
+# --- Umsatz je Artikel / Lieferant / Monat ---
+umsatz = []
+y, m = 2024, 1
+while (y, m) <= (2026, 3):
+    for art in artikel:
+        # Basisumsatz, Spielzeug NordBaby relativ viel Absatz
+        base_qty = random.randint(8, 35)
+        if art["Warengruppe"] == "Spielzeug":
+            base_qty = random.randint(25, 80)
+        if art["Warengruppe"] == "Kinderwagen":
+            base_qty = random.randint(3, 12)
+        umsatz_eur = round(base_qty * vk[art["Artikelnummer"]], 2)
+        umsatz.append(
+            {
+                "Jahr": y,
+                "Monat": m,
+                "Artikelnummer": art["Artikelnummer"],
+                "Artikelname": art["Artikelname"],
+                "Lieferant": art["Lieferant"],
+                "Warengruppe": art["Warengruppe"],
+                "Menge_verkauft": base_qty,
+                "Umsatz_EUR": umsatz_eur,
+            }
+        )
+    m += 1
+    if m > 12:
+        m = 1
+        y += 1
+
+
+def save_xlsx(filename, sheet_name, headers, rows, hinweis):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = sheet_name
+    write_rows(ws, headers, rows)
+    ws2 = wb.create_sheet("Hinweis")
+    ws2["A1"] = "Maurer Consulting – Beispieldaten (fiktiv)"
+    ws2["A1"].font = Font(bold=True, color=PURPLE, size=13)
+    ws2["A3"] = hinweis
+    ws2["A4"] = "Keine echten Kundendaten. Sortiment angelehnt an typischen Babymarkt (z. B. früher ProBaby Traunstein / Wettbewerb BabyWalz, BabyOne)."
+    ws2.column_dimensions["A"].width = 100
+    path = data_dir / filename
+    wb.save(path)
+    print("Wrote", path, "rows", len(rows))
+
+
+save_xlsx(
+    "01_Antraege.xlsx",
+    "Antraege",
+    [
+        "Kunde_Name",
+        "Kunde_Land",
+        "Antragsdatum",
+        "Antragsnummer",
+        "Artikelnummer",
+        "Artikelname",
+        "Kaufdatum",
+        "Beantragte_Kostenerstattung_EUR",
+        "Defekt_Freitext",
+    ],
+    antraege,
+    "Tabelle 1: Kunden-Gewährleistungsanträge (z. B. aus Reklamations-Mails erfasst).",
+)
+
+save_xlsx(
+    "02_Artikelstamm.xlsx",
+    "Artikelstamm",
+    ["Artikelnummer", "Artikelname", "Einkaufspreis_EUR", "Warengruppe", "Lieferant"],
+    artikel,
+    "Tabelle 2: Artikelstamm aus ERP inkl. Einkaufspreis, Warengruppe und Lieferant.",
+)
+
+save_xlsx(
+    "03_Gutschriften.xlsx",
+    "Gutschriften",
+    [
+        "Antragsnummer",
+        "Gutschrift_Rechnung_Nr",
+        "Datum_Gutschrift",
+        "Artikelnummer",
+        "Artikelname",
+        "Art",
+        "Menge",
+        "Erstattete_Kosten_EUR",
+        "Bemerkung",
+    ],
+    gutschriften,
+    "Tabelle 3: Anerkannte Fälle – Kostenerstattung oder Ersatz 1:1 (Retoure/Neuausgabe, Bon oft 0).",
+)
+
+save_xlsx(
+    "04_Umsatz.xlsx",
+    "Umsatz",
+    [
+        "Jahr",
+        "Monat",
+        "Artikelnummer",
+        "Artikelname",
+        "Lieferant",
+        "Warengruppe",
+        "Menge_verkauft",
+        "Umsatz_EUR",
+    ],
+    umsatz,
+    "Tabelle 4: Umsatz und Verkaufsmenge je Artikel/Lieferant und Monat.",
+)
+
+# Meta für die Webseite
+meta = data_dir / "daten_meta.txt"
+meta.write_text(
+    "Dateinamen unverändert lassen:\n"
+    "01_Antraege.xlsx\n02_Artikelstamm.xlsx\n03_Gutschriften.xlsx\n04_Umsatz.xlsx\n"
+    "Nach neuem Monats-Export: Dateien ersetzen, dann auf der Webseite „Daten aktualisieren“ klicken.\n",
+    encoding="utf-8",
+)
+print("Antraege", len(antraege), "Gutschriften", len(gutschriften), "Umsatzzeilen", len(umsatz))

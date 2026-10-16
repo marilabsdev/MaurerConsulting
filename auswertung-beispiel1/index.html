@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
@@ -130,6 +130,19 @@
       line-height: 1.4;
     }
     .foot strong { color: var(--purple); }
+    .back {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--purple);
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-decoration: none;
+    }
+    .back:hover { border-color: var(--purple); }
 
     /* Kompakter auf dem Handy — Google Sites-Rahmen wird vom Code nicht höher */
     @media (max-width: 600px) {
@@ -151,6 +164,8 @@
 </head>
 <body>
   <div class="wrap">
+    
+    <a class="back" href="../">← Zurück zur Übersicht</a>
     <div class="badge">Live-Demo · KI &amp; Auswertungen</div>
     <h2>Umsatz interaktiv auswerten</h2>
     <p class="lead">
@@ -312,3 +327,4 @@
   </script>
 </body>
 </html>
+

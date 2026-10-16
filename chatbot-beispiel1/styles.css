@@ -67,6 +67,21 @@ h1 {
 
 .meta a { color: var(--purple); font-weight: 600; text-decoration: none; }
 
+.back {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--purple);
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.back:hover { border-color: var(--purple); }
+
 .chat {
   flex: 1;
   border: 1px solid var(--line);

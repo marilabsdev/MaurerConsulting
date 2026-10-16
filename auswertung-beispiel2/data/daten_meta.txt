@@ -1,0 +1,6 @@
+Dateinamen unverändert lassen:
+01_Antraege.xlsx
+02_Artikelstamm.xlsx
+03_Gutschriften.xlsx
+04_Umsatz.xlsx
+Nach neuem Monats-Export: Dateien ersetzen, dann auf der Webseite „Daten aktualisieren“ klicken.
