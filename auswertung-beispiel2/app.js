@@ -207,15 +207,25 @@
       kostenByAntrag[g.Antragsnummer] = (kostenByAntrag[g.Antragsnummer] || 0) + g.Erstattete_Kosten_EUR;
     });
 
-    // Fehlerklassen aus Freitext
-    const byKlasse = {};
+    // Fehlerklasse × Lieferant (Händler-Sicht)
+    const byKlasseLieferant = {};
     antraege.forEach((a) => {
       const klasse = classifyDefect(a.Defekt_Freitext);
-      if (!byKlasse[klasse]) byKlasse[klasse] = { Klasse: klasse, Antraege: 0, Anerkannt: 0, Kosten: 0 };
-      byKlasse[klasse].Antraege += 1;
+      const lieferant = (arts[a.Artikelnummer] && arts[a.Artikelnummer].Lieferant) || "Unbekannt";
+      const key = lieferant + "||" + klasse;
+      if (!byKlasseLieferant[key]) {
+        byKlasseLieferant[key] = {
+          Lieferant: lieferant,
+          Klasse: klasse,
+          Antraege: 0,
+          Anerkannt: 0,
+          Kosten: 0,
+        };
+      }
+      byKlasseLieferant[key].Antraege += 1;
       if (anerkanntIds.has(a.Antragsnummer)) {
-        byKlasse[klasse].Anerkannt += 1;
-        byKlasse[klasse].Kosten += kostenByAntrag[a.Antragsnummer] || 0;
+        byKlasseLieferant[key].Anerkannt += 1;
+        byKlasseLieferant[key].Kosten += kostenByAntrag[a.Antragsnummer] || 0;
       }
     });
 
@@ -295,7 +305,7 @@
       mengeErsatz,
       byArt: Object.values(byArt).sort((a, b) => b.Antraege - a.Antraege),
       byLieferant: Object.values(byLieferant).sort((a, b) => b.Risiko - a.Risiko),
-      byKlasse: Object.values(byKlasse).sort((a, b) => b.Antraege - a.Antraege),
+      byKlasseLieferant: Object.values(byKlasseLieferant).sort((a, b) => b.Antraege - a.Antraege),
       series,
     };
   }
@@ -371,24 +381,26 @@
   }
 
   function renderKlassen(c) {
-    const rows = c.byKlasse || [];
+    // Top-Kombinationen Lieferant × Fehlerklasse (Händler-Sicht)
+    const rows = (c.byKlasseLieferant || []).slice(0, 12);
     if (els.chartKlassenSum) {
       els.chartKlassenSum.textContent =
         rows.length === 0
-          ? "Keine Klassen — bitte „Daten aktualisieren“ klicken oder Jahr-Filter prüfen."
-          : "Anträge in Klassen: " +
-            num(rows.reduce((s, r) => s + r.Antraege, 0)) +
-            " · Kosten anerkannter Fälle: " +
+          ? "Keine Klassen — bitte „Daten aktualisieren“ oder Jahr-Filter prüfen."
+          : "Top " +
+            rows.length +
+            " Kombinationen Lieferant × Fehlerklasse · Kosten: " +
             euro(rows.reduce((s, r) => s + r.Kosten, 0));
     }
 
     if (els.tblKlassen) {
       els.tblKlassen.innerHTML =
         rows.length === 0
-          ? `<tr><td colspan="4">Keine Daten in den Fehlerklassen.</td></tr>`
+          ? `<tr><td colspan="5">Keine Daten.</td></tr>`
           : rows
               .map(
                 (r) => `<tr>
+        <td>${r.Lieferant}</td>
         <td>${r.Klasse}</td>
         <td class="num">${num(r.Antraege)}</td>
         <td class="num">${num(r.Anerkannt)}</td>
@@ -400,9 +412,8 @@
 
     if (!els.chartKlassen) return;
 
-    // Balken: Anträge je Klasse
-    const padL = 48, padR = 16, padT = 20, padB = 70;
-    const W = 720, H = 260;
+    const padL = 48, padR = 16, padT = 20, padB = 90;
+    const W = 720, H = 280;
     const innerW = W - padL - padR;
     const innerH = H - padT - padB;
     let maxVal = 1;
@@ -411,7 +422,12 @@
     });
     const n = Math.max(rows.length, 1);
     const groupW = innerW / n;
-    const barW = Math.min(36, groupW - 10);
+    const barW = Math.min(28, groupW - 6);
+    // Farbe je Lieferant
+    const lieferanten = [...new Set(rows.map((r) => r.Lieferant))];
+    const colors = ["#2e1477", "#5a3fa8", "#8b7bc4", "#c4b5e0"];
+    const colorOf = (L) => colors[lieferanten.indexOf(L) % colors.length];
+
     let html = "";
     for (let i = 0; i <= 4; i++) {
       const y = padT + (innerH * i) / 4;
@@ -424,10 +440,9 @@
       const h = (r.Antraege / maxVal) * innerH;
       const x = gx - barW / 2;
       const y = padT + innerH - h;
-      const name = String(r.Klasse || "");
-      html += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 0)}" rx="4" fill="#2e1477"></rect>`;
-      const label = name.length > 14 ? name.slice(0, 12) + "..." : name;
-      html += `<text x="${gx}" y="${H - 28}" text-anchor="middle" font-size="10" fill="#2b2433" transform="rotate(-28 ${gx} ${H - 28})">${label}</text>`;
+      html += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h, 0)}" rx="3" fill="${colorOf(r.Lieferant)}"></rect>`;
+      const label = (r.Lieferant.split(" ")[0] + " / " + r.Klasse).slice(0, 18);
+      html += `<text x="${gx}" y="${H - 36}" text-anchor="middle" font-size="9" fill="#2b2433" transform="rotate(-32 ${gx} ${H - 36})">${label}</text>`;
     });
     els.chartKlassen.innerHTML = html;
   }

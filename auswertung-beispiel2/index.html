@@ -90,18 +90,19 @@ Oben einen Button „Daten aktualisieren“, damit ich neue Monats-Exporte einsp
     </section>
 
     <section class="panel">
-      <h2>Fehlerklassen aus Kunden-Freitext</h2>
+      <h2>Fehlerklassen je Lieferant</h2>
       <p class="text" style="margin-bottom:10px;">
-        Der Defekt-Text aus der Antragstabelle wird automatisch klassifiziert
-        (regelbasiert, ohne LLM). Kosten = Summe der verknüpften Gutschriften/Ersatzfälle.
+        Für Händler: Welcher Lieferant hat welche typischen Defekte?
+        (z. B. bei A oft Stoff/Nähte, bei B oft Griffe.) Freitext wird klassifiziert; Kosten = anerkannte Gutschriften.
       </p>
       <div class="chart-head">
         <span class="chart-sum" id="chartKlassenSum"></span>
       </div>
-      <svg id="chartKlassen" viewBox="0 0 720 260" role="img" aria-label="Fehlerklassen"></svg>
+      <svg id="chartKlassen" viewBox="0 0 720 280" role="img" aria-label="Fehlerklassen je Lieferant"></svg>
       <table>
         <thead>
           <tr>
+            <th>Lieferant</th>
             <th>Fehlerklasse</th>
             <th class="num">Anträge</th>
             <th class="num">Anerkannt</th>
